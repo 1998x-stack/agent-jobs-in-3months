@@ -40,3 +40,8 @@ python -m pytest
 ## B07–B10 · P2 Governance & Safety
 
 [P2 Runtime](p2_cloud_runtime/README.md) includes a four-eyes human approval gate for synthetic receipts, role-bound authorization, fixed-code subprocess limits, and privacy-safe operational metrics.
+
+
+## C01–C03 · P3 Evaluation Contract
+
+[P3 Evaluation Lab](p3_eval_learning_lab/README.md) now replays actual P1/P2 offline jobs with versioned synthetic benchmark cases, observed SQLite final-state oracles and source-derived tool/checkpoint trajectories.

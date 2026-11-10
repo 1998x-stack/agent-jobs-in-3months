@@ -22,3 +22,20 @@
 **指标解释：** Macro Recall@k 为正例查询的相关文段检出率均值；MRR@k 为第一个相关文段的平均倒数排名；No-evidence Accuracy 衡量负例无误检比例。
 
 这不代表真实用户查询性能，源文档改变时必须同步修订 Gold 标签。
+
+## C01–C03 · Agent Evaluation v1
+
+- [agent_eval_v1.jsonl](agent_eval_v1.jsonl)：13 条**完全合成**的 read-only Agent 评测集（train 4、dev 4、holdout 5）。
+- Schema: `agent-eval.v1`，严格的 case_id、scenario、group_id、split、tenant、question、GoldState、required_tools、forbidden_tools、required_tool_arguments、tags。
+- 来源组必须固定到单一 split；同一规范化问题不可跨 split 复用；文件 SHA-256 指纹用于评测可复现性。
+- Gold `run_status`, `result_status`, `required_citations`, `required_checkpoints`, `receipt_count` 由 P2 SQLite 实际状态与保存的引用验证。
+- 当前工具**参数**未被 P1/P2 全量记录；参数规则缺值必须评为不可证明 / 失败。
+
+运行：
+
+```bash
+PYTHONPATH=projects/p1_agent_harness/src:projects/p2_cloud_runtime/src:projects/p3_eval_learning_lab/src \
+  python -m agent_eval.benchmark_demo --assert-pass
+```
+
+训练/开发/保留集仅隔离虚构文档组，不代表通过真实用户样本的泛化测试，亦未通过独立人工审核。旧 `synthetic_cases.jsonl` 继续服务早期 toy ablation，不应与严格 v1 Schema 混用。

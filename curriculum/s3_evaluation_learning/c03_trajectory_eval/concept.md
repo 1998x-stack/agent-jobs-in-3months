@@ -1,22 +1,28 @@
-# C03 Concept Notes — 轨迹级评测
+# C03 · Process / Trajectory Evaluation — Concepts & Failure Modes
 
-## 必懂术语
+## 机制
 
-tool sequences / trace / process grading
+从 P1 实际 TraceStep 以及 P2 已提交 Checkpoint 中抽取动作名称；验证有序调用、禁止动作、Gold Checkpoint 和终态。没有记录的参数为 unknown，要求参数对照时应 fail closed。
 
-## 解释（学习时填写）
+## 必须回答
 
-- What: 这个概念解决的具体问题是什么？
-- Why: 如果没有它，Agent 会在哪种任务上失败？
-- How: 最小的数据结构、输入、输出和状态变化是什么？
-- Trade-off: 成本、速度、可靠性、风险如何权衡？
+- 为什么 dataset group_id 要独立于 case_id？跨 split 同源文档是否构成泄漏？
+- 为什么模型生成的“完成退款”文本不是数据库真值？
+- 如何拒绝轨迹中的禁止工具、错误调用顺序或未知参数？
+- 为什么只观察成功的最终状态会漏掉中间越权行为？
+- 如何说明轨迹重建与原生事件流之间的信息损失？
 
-## 典型误区
+## 负面测试建议
 
-- 演示代码成功 ≠ 生产环境语义正确。
-- 模型返回内容 ≠ 可信指令或事实。
-- 没有可复现测试就无法确认真正掌握。
+1. 同一 Case 在两个 split 复用，或同文档变体泄漏到 holdout。
+2. 成功回答但数据库状态为 failed，或者出现非预期合成收据。
+3. Missing tool / forbidden tool / wrong order / arguments=None。
+4. 虚假的引用 ID、额外字段和超过预算的 Trace 事件。
 
-## 自己画一张图（TODO）
+## 代码
 
-使用 Mermaid 画出该能力的内部状态或调用流程。
+[Exercise](exercise.py) · [Self-check](check_exercise.py) · [P3 Implementation](../../../projects/p3_eval_learning_lab/src/agent_eval/trajectory.py) · [Contract Tests](../../../projects/p3_eval_learning_lab/tests/test_eval_contracts.py)
+
+## 结果限制
+
+小规模合成集只用于回归与评测框架验证，不表示线上准确率或模型效果。

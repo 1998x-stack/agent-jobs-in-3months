@@ -62,6 +62,7 @@ class ResearchPacket:
     evidence: dict[str, PolicyChunk]
     model_steps: int
     packed: PackedContext
+    tool_actions: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -71,6 +72,7 @@ class TeamRun:
     citation_ids: tuple[str, ...]
     handoffs: tuple[HandoffEvent, ...]
     context_reports: tuple[PackedContext, ...]
+    tool_actions: tuple[str, ...] = ()
 
 
 class PlannerAgent:
@@ -174,6 +176,7 @@ class ResearcherAgent:
             evidence=dict(session.evidence),
             model_steps=len(response.trace),
             packed=packed,
+            tool_actions=tuple(step.action for step in response.trace),
         )
 
 
@@ -219,6 +222,7 @@ class TeamCoordinator:
         handoffs: list[HandoffEvent] = []
         contexts: list[PackedContext] = []
         answers: list[VerifiedAnswer] = []
+        observed_tools: list[str] = []
         for task in tasks:
             handoffs.append(HandoffEvent(task.task_id, "planner", "researcher", "delegated"))
             model = (
@@ -231,6 +235,7 @@ class TeamCoordinator:
                 max_context_chars=max_context_chars,
             )
             contexts.append(packet.packed)
+            observed_tools.extend(packet.tool_actions)
             handoffs.append(HandoffEvent(task.task_id, "researcher", "reviewer", "retrieved"))
             verified = self.reviewer.review(packet)
             answers.append(verified)
@@ -242,7 +247,7 @@ class TeamCoordinator:
         if not present:
             return TeamRun(
                 "insufficient_evidence", NO_EVIDENCE_MESSAGE,
-                (), tuple(handoffs), tuple(contexts),
+                (), tuple(handoffs), tuple(contexts), tuple(observed_tools),
             )
         all_supported = len(present) == len(answers)
         status: Literal["supported", "partial", "insufficient_evidence"] = (
@@ -262,4 +267,5 @@ class TeamCoordinator:
             citation_ids=tuple(citation_ids),
             handoffs=tuple(handoffs),
             context_reports=tuple(contexts),
+            tool_actions=tuple(observed_tools),
         )
