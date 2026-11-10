@@ -1,22 +1,30 @@
-# A07 Concept Notes — Grounding 与引用校验
+# A07 · 可验证引文与无证据退让：Concept Notes
 
-## 必懂术语
+## Why / What / How
 
-citations / evidence / answer faithfulness
+模型输出不能因为附上 [source] 就自动可信。引文要引用本轮实际检索的 chunk_id，且 quote 必须是该 chunk 的原文连续片段。
 
-## 解释（学习时填写）
+## 数据模型与边界
 
-- What: 这个概念解决的具体问题是什么？
-- Why: 如果没有它，Agent 会在哪种任务上失败？
-- How: 最小的数据结构、输入、输出和状态变化是什么？
-- Trade-off: 成本、速度、可靠性、风险如何权衡？
+只校验出处与原文一致性，不证明问答推断的事实性或语义蕴含
 
-## 典型误区
+## 正确性检查
 
-- 演示代码成功 ≠ 生产环境语义正确。
-- 模型返回内容 ≠ 可信指令或事实。
-- 没有可复现测试就无法确认真正掌握。
+- **Happy path**：存在一条可信结果时能够返回带来源的输出。
+- **Missing evidence**：找不到文档时必须显式退让，不能猜测。
+- **Invalid input**：错误参数、未授权工具或伪造来源不得通过。
+- **Trace**：记录工具名称与状态，不记录密钥或不必要的原始用户数据。
 
-## 自己画一张图（TODO）
+## 工程源代码
 
-使用 Mermaid 画出该能力的内部状态或调用流程。
+`projects/p1_agent_harness/src/agent_harness/grounding.py`
+
+## 实验问题
+
+- 如何从模型生成的参数中剥离租户权限？
+- 为什么不能把数据库超时当成「检索不到」？
+- 如果回答引用的是正确文件，但错误地推导出结论，现有校验为什么仍然不够？
+
+## 下一步
+
+增加 embedding + reranker、人工校准的语义忠实度评测和可复现 hard negatives。

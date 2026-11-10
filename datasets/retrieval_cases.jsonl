@@ -1,0 +1,13 @@
+{"id":"q01","query":"refund proposal transfer money human approval","tenant":"public-demo","gold_chunk_ids":["refund_approval:p01"],"tag":"approval"}
+{"id":"q02","query":"refund order identifier missing clarification","tenant":"public-demo","gold_chunk_ids":["refund_approval:p02"],"tag":"clarification"}
+{"id":"q03","query":"approved refund processing five business days","tenant":"public-demo","gold_chunk_ids":["refund_timing:p01"],"tag":"timing"}
+{"id":"q04","query":"refund immediate settlement promise","tenant":"public-demo","gold_chunk_ids":["refund_timing:p02"],"tag":"settlement"}
+{"id":"q05","query":"standard shipping dispatch payment confirmation two business days","tenant":"public-demo","gold_chunk_ids":["shipping:p01"],"tag":"shipping"}
+{"id":"q06","query":"shipping shipment tracking link carrier","tenant":"public-demo","gold_chunk_ids":["shipping:p02"],"tag":"tracking"}
+{"id":"q07","query":"password reset verified email two-factor recovery code","tenant":"public-demo","gold_chunk_ids":["account_security:p01"],"tag":"security"}
+{"id":"q08","query":"identity verification lost access verified email","tenant":"public-demo","gold_chunk_ids":["account_security:p02"],"tag":"identity"}
+{"id":"q09","query":"cancel order before dispatch return process","tenant":"public-demo","gold_chunk_ids":["cancellation:p01"],"tag":"cancellation"}
+{"id":"q10","query":"return eligibility item category return window clarification","tenant":"public-demo","gold_chunk_ids":["cancellation:p02"],"tag":"returns"}
+{"id":"q11","query":"Tenant Alpha billing reconciliation Wednesday","tenant":"tenant-alpha","gold_chunk_ids":["tenant_alpha_billing:p01"],"tag":"private"}
+{"id":"q12","query":"galactic unicorn spaceship launch","tenant":"public-demo","gold_chunk_ids":[],"tag":"unknown"}
+{"id":"q13","query":"coconut piano orchestra","tenant":"public-demo","gold_chunk_ids":[],"tag":"unknown"}

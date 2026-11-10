@@ -1,0 +1,38 @@
+[
+  {
+    "id": "refund_approval",
+    "title": "Refund Approval Rules",
+    "file": "refund_approval.md",
+    "scope": "public"
+  },
+  {
+    "id": "refund_timing",
+    "title": "Refund Processing Timeline",
+    "file": "refund_timing.md",
+    "scope": "public"
+  },
+  {
+    "id": "shipping",
+    "title": "Shipping Dispatch Policy",
+    "file": "shipping.md",
+    "scope": "public"
+  },
+  {
+    "id": "account_security",
+    "title": "Account Recovery and Authentication",
+    "file": "account_security.md",
+    "scope": "public"
+  },
+  {
+    "id": "cancellation",
+    "title": "Order Cancellation and Returns",
+    "file": "cancellation.md",
+    "scope": "public"
+  },
+  {
+    "id": "tenant_alpha_billing",
+    "title": "Tenant Alpha Internal Billing",
+    "file": "tenant_alpha_billing.md",
+    "scope": "tenant-alpha"
+  }
+]

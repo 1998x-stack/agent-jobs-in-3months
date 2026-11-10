@@ -83,3 +83,62 @@ python -m pytest projects/p1_agent_harness/tests tests/test_atomic_a01_a04.py
 **隐私与合规：** 教学适配器显式设置 `store=True` 支持 `previous_response_id` 多轮链。不要发送真实客户数据、密钥和敏感轨迹。生产环境必须检查数据保留政策，并考虑无状态方案。
 
 **局限：** 只允许只读政策查询；真实检索、多 Agent、OAuth、人工审批、分布式恢复尚未实现。参考 API 规范：[Function Calling](https://developers.openai.com/api/docs/guides/function-calling)。
+
+---
+
+## A05–A07 · Document Retrieval + Verifiable Citations (new)
+
+本批将固定字典策略查询升级为**读取本仓库 Markdown 文件**的 BM25 词法检索，并添加严格的摘录式引用校验；现有 A01–A04 live demo 保留兼容。
+
+### 快速运行：完全离线、无需 API Key
+
+```bash
+PYTHONPATH=projects/p1_agent_harness/src python -m agent_harness.grounded_demo --question "refund proposal human approval"
+PYTHONPATH=projects/p1_agent_harness/src python -m agent_harness.retrieval_eval
+python -m pytest projects/p1_agent_harness/tests tests/test_atomic_a05_a07.py
+```
+
+### 可选：真实 LLM + 搜索工具 + 验证引用
+
+```bash
+python -m pip install -e '.[dev,llm]'
+export OPENAI_API_KEY='your-own-api-key'
+PYTHONPATH=projects/p1_agent_harness/src python -m agent_harness.grounded_demo --live --question "Does a refund proposal transfer money before approval?"
+```
+
+真实模式会消耗 API 费用；CI 使用 Fake ModelAdapter，不进行在线推理。多轮 Responses 示例使用 `store=True`，请勿传输敏感或真实客户数据。
+
+### 本批新增模块
+
+| Module | Purpose |
+|---|---|
+| `policy_search.py` | Markdown manifest、段落 chunking、稳定 ID、scope 过滤及 BM25 |
+| `retrieval_tools.py` | 只读 `search_policy(query, top_k)` 工具；查询与租户权限分离 |
+| `grounding.py` | JSON 答案契约、引用 ID + exact quote 校验、无证据退让 |
+| `grounded_demo.py` | 离线摘录式演示，以及可选真实 LLM 搜索 |
+| `retrieval_eval.py` | 合成标签数据的 Macro Recall@k、MRR@k、No-evidence Accuracy |
+
+### Grounding 的确切保证
+
+只有模型引用了**本轮实际返回**的 chunk，且引用的 `quote` 是该 chunk 中原样连续片段，才能展示。没有来源、引用造假、自由叙述或额外 JSON 字段均被拒绝。展示结果只由这些已验证原文摘录组成。
+
+**注意：这是来源与摘录验证，不是语义蕴含判断。** 引用正确不保证引用的材料回答了问题；当前语料均为虚构政策，不能用于真实退款决策。对 Prompt Injection 的防护依然需要进一步实验。
+
+### 数据来源和扩展路线
+
+所有检索文档均位于 [datasets/policy_docs](../../datasets/policy_docs/)，含租户隔离测试用的虚构内部文档。现阶段不使用 embedding / vector database / reranker，因此不要把结果宣传为语义混合 RAG。后续可引入向量召回、RRF 与语义 Grader。
+
+### 技术数据流
+
+```mermaid
+flowchart TD
+ Q[User Question] --> M[Model / Fake Model]
+ M --> T[Typed Search Tool]
+ T --> A[Tenant-scoped BM25]
+ A --> D[Markdown Chunks and Source IDs]
+ D --> E[Per-run Evidence Cache]
+ E --> V[Extractive Citation Verifier]
+ M --> V
+ V -->|Valid exact quote| O[Grounded Source Excerpts]
+ V -->|Invalid / no evidence| X[Reject or Abstain]
+```

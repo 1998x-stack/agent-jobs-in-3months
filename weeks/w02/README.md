@@ -29,3 +29,14 @@
 ## Exit Criteria
 
 另一位工程师能按 README 独立复现本周结果，且能说出系统尚未实现的能力。
+
+## A05–A07 工程进度更新
+
+- [x] A05 工具 Schema、只读执行、无证据与异常的区分
+- [x] A06 Markdown + BM25 + 来源 ID、租户过滤、检索测试集
+- [x] A07 本轮引文校验、拒绝伪造引文、无证据退让
+- [x] 无 API Key 集成测试、检索 Recall@k / MRR@k
+- [ ] 学习者运行真实模型（可选，产生 API 费用）
+- [ ] 手工扩展 10 条 hard negatives 与真实任务级评测
+
+项目指南：[P1 A05–A07](../../projects/p1_agent_harness/README.md)
