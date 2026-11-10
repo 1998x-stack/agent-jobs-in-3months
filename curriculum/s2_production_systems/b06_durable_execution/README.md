@@ -1,33 +1,29 @@
-# B06 · Checkpoint 与恢复
+# B06 · Checkpoint / Crash Recovery
 
-**Track:** S2 — Production Agent Systems Engineering
+**状态：原子练习、对应工程组件和离线回归测试均已实现。**
 
-## 1. 核心概念
+## 本单元能力
 
-state machine / persistence / replay
+稳定步骤、不可变落盘检查点与中断后重放
 
-## 2. 最小代码挑战
+## 学习路径
 
-保存状态并从中断点恢复
+1. 阅读 [concept.md](concept.md)，解释失败模式与一致性约束。
+2. 阅读 [exercise.py](exercise.py) 的最小实现。
+3. 在本目录执行 `python check_exercise.py`。
+4. 阅读 [P2 Runtime](../../../projects/p2_cloud_runtime/README.md) 中的完整工程。
+5. 在仓库根目录执行 `python -m pytest`。
 
-## 3. 接口
+## 验收
 
-- 实现 `exercise.py` 中的 `solve(input_data: dict) -> dict`。
-- 保留对异常、权限和边界输入的显式处理；不使用不必要的框架。
-- 运行 `python check_exercise.py`；替换示例断言为该能力的具体检查。
+- [x] 独立练习和边界输入自测
+- [x] 接入 P2 的持久化 / Worker 代码
+- [x] GitHub Actions 可离线验证
+- [ ] 学习者独立修改策略并记录故障恢复 Trace
+- [ ] 生产替代方案比较与设计文档
 
-## 4. 验收标准
+## 对应代码
 
-恢复后不重复外部副作用
+[durable_workflow.py](../../../projects/p2_cloud_runtime/src/agent_runtime/durable_workflow.py)
 
-## 5. 项目组合
-
-完成后，思考如何将此能力引入 [p2_cloud_runtime](../../../projects/p2_cloud_runtime/README.md)。
-
-## 6. 学习证据（TODO）
-
-- [ ] 用自己的话解释概念、边界和适用场景
-- [ ] 最小实现 + 单元测试
-- [ ] 反例/故障注入
-- [ ] 记录设计取舍与失败案例
-- [ ] 在对应项目中集成
+**特别说明：** 这是 SQLite 本地教学工作流，并不保证外部写操作 exactly-once。

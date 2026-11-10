@@ -1,11 +1,20 @@
-"""Run directly: python curriculum/s2_production_systems/b06_durable_execution/check_exercise.py"""
 from exercise import solve
 
+
 def main() -> None:
-    # Replace this generic contract with an actual edge-case assertion.
-    result = solve({"goal": "minimal reproducible learning task"})
-    assert isinstance(result, dict), "Return a structured result"
-    print("B06 baseline check passed; add boundary cases next")
+    recovered = solve({"steps": ["plan", "research", "review"], "crash_after": 2})
+    assert recovered == {
+        "reused": ["plan", "research"], "executed": ["review"], "total": 3,
+    }
+    assert solve({"steps": ["plan", "review"], "crash_after": 0})["reused"] == []
+    try:
+        solve({"steps": ["plan", "plan"], "crash_after": 1})
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("duplicate checkpoint IDs were accepted")
+    print("B06: PASS")
+
 
 if __name__ == "__main__":
     main()
