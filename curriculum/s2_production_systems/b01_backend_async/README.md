@@ -1,33 +1,25 @@
-# B01 · 后端 API 与异步
+# B01 · FastAPI / HTTP Task Contract
 
-**Track:** S2 — Production Agent Systems Engineering
+**Status:** atomic exercise implemented and integrated into the P2 API example.
 
-## 1. 核心概念
+## Objective
 
-HTTP / FastAPI / asyncio
+HTTP submits tasks and returns a durable 202 receipt. Worker execution is separate from the request thread.
 
-## 2. 最小代码挑战
+## Learning loop
 
-实现创建任务与读取状态的接口
+1. Read [concept.md](concept.md) and review state/transaction boundaries.
+2. Inspect [exercise.py](exercise.py) and explain success and failure behavior.
+3. Run `python check_exercise.py` from this directory.
+4. Compare your code to [P2 Runtime API](../../../projects/p2_cloud_runtime/README.md).
+5. Run `python -m pytest` at the repository root.
 
-## 3. 接口
+## Acceptance
 
-- 实现 `exercise.py` 中的 `solve(input_data: dict) -> dict`。
-- 保留对异常、权限和边界输入的显式处理；不使用不必要的框架。
-- 运行 `python check_exercise.py`；替换示例断言为该能力的具体检查。
+- [x] Runnable teaching micro-exercise
+- [x] Boundary and failure-path self-test
+- [x] P2 full API/transaction/idempotency integration
+- [ ] Rewrite independently and capture a failure trace
+- [ ] Propose how to productionize this component
 
-## 4. 验收标准
-
-并发调用不共享可变请求状态
-
-## 5. 项目组合
-
-完成后，思考如何将此能力引入 [p2_cloud_runtime](../../../projects/p2_cloud_runtime/README.md)。
-
-## 6. 学习证据（TODO）
-
-- [ ] 用自己的话解释概念、边界和适用场景
-- [ ] 最小实现 + 单元测试
-- [ ] 反例/故障注入
-- [ ] 记录设计取舍与失败案例
-- [ ] 在对应项目中集成
+All data is synthetic and local. No live model calls are used in CI.

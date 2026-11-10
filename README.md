@@ -111,3 +111,21 @@ python -m pytest
 **当前课程基础实现 A01–A10 已覆盖 10/30 个元能力。** 这属于学习工程基线，不表示已经掌握相关技能或生产级合规已完成。A10 的 MCP Client/Server 协议仍为后续任务。
 
 在线调用通过 `--live` 显式开启，将产生 API 费用；请勿输入敏感客户信息。
+
+---
+
+## B01–B03 · Production Systems 基础任务 API（新增）
+
+P2 新增 FastAPI + SQLite 任务提交/查询/重试服务，连接现有 P1 Agent Team，并通过 Worker 离线执行：
+
+```bash
+python -m pip install -e '.[dev,api]'
+PYTHONPATH=projects/p1_agent_harness/src:projects/p2_cloud_runtime/src python -m agent_runtime.api_demo
+python -m pytest
+```
+
+**语义：** 首次 POST 202；相同 Idempotency-Key 与相同请求内容重放 200 且返回相同任务 ID；同键不同请求 409；查询只允许当前身份映射的租户/用户。离线 Worker 执行后返回 P1 的来源验证结果。
+
+P2 的静态 Token 仅适合本地教学。SQLite 事务与租约不等于外部业务副作用 exactly-once；生产仍需要 OAuth/OIDC、PostgreSQL、Outbox、队列和审计。
+
+[详细 API 与启动命令](projects/p2_cloud_runtime/README.md)

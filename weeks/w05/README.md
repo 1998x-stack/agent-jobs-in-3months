@@ -1,30 +1,31 @@
-# W05 · API, Persistence & Idempotency
+# W05 · FastAPI, SQL Transactions and Idempotency
 
-## 本周元能力
+## Atomic skills
 
-- [B01 后端 API 与异步](../../curriculum/s2_production_systems/b01_backend_async/README.md)
-- [B02 数据库事务](../../curriculum/s2_production_systems/b02_database_transactions/README.md)
-- [B03 幂等与副作用](../../curriculum/s2_production_systems/b03_idempotency/README.md)
+- [B01 HTTP / FastAPI](../../curriculum/s2_production_systems/b01_backend_async/README.md)
+- [B02 Database Transactions](../../curriculum/s2_production_systems/b02_database_transactions/README.md)
+- [B03 Idempotency](../../curriculum/s2_production_systems/b03_idempotency/README.md)
 
-## 核心交付
+## Delivered
 
-数据库任务协议和幂等测试
+- [x] POST /runs + GET status + bounded retry with strict Pydantic schemas
+- [x] server-configured demo bearer mapping → tenant/user
+- [x] SQLite atomic insert, rollback, database unique key and fingerprint
+- [x] concurrent duplicate submission and worker competition tests
+- [x] P1 TeamCoordinator executed from offline worker and recorded verified citations
+- [x] stale lease completion rejected; failed retries bounded to three
+- [ ] production auth, TLS, Postgres, durable message broker, transaction outbox
+- [ ] SLO, audit, load testing and model cost metrics
 
-## 最小任务清单
+## Acceptance
 
-- [ ] 完成对应概念笔记和最小代码挑战
-- [ ] 新增边界/错误/权限测试
-- [ ] 将相关功能接入当前项目
-- [ ] 保存执行截图或 trace（不得含密钥及用户隐私）
-- [ ] 记录一条失败原因与纠正措施
+```bash
+python -m pip install -e '.[dev,api]'
+python -m pytest
+PYTHONPATH=projects/p1_agent_harness/src:projects/p2_cloud_runtime/src python -m agent_runtime.api_demo
+python scripts/check_progress.py
+```
 
-## Evidence Log
+HTTP task receipt is not external payment idempotency. An expired lease may permit a worker to repeat *read-only* work.
 
-- Commit / PR: TODO
-- Run command: TODO
-- Pass / fail metrics: TODO
-- Design trade-off: TODO
-
-## Exit Criteria
-
-另一位工程师能按 README 独立复现本周结果，且能说出系统尚未实现的能力。
+Evidence: `projects/p2_cloud_runtime/tests/test_task_api.py`; PR: TODO.
