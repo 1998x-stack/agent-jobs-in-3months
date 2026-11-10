@@ -1,11 +1,27 @@
-"""Run directly: python curriculum/s1_agent_architecture/a06_retrieval_rag/check_exercise.py"""
 from exercise import solve
 
+
+DOCUMENTS = [
+    {"id": "r1", "text": "refund needs approval from a human"},
+    {"id": "s1", "text": "shipping tracking is available after dispatch"},
+    {"id": "p1", "text": "password reset requires verified email"},
+]
+
+
 def main() -> None:
-    # Replace this generic contract with an actual edge-case assertion.
-    result = solve({"goal": "minimal reproducible learning task"})
-    assert isinstance(result, dict), "Return a structured result"
-    print("A06 baseline check passed; add boundary cases next")
+    found = solve({"documents": DOCUMENTS, "query": "refund approval", "top_k": 1})
+    assert found["status"] == "ok"
+    assert found["hits"][0]["doc_id"] == "r1"
+    assert found["hits"][0]["score"] > 0
+    assert solve({"documents": DOCUMENTS, "query": "unicorn"})["status"] == "no_evidence"
+    try:
+        solve({"documents": DOCUMENTS, "query": "refund", "top_k": 0})
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("invalid top_k was accepted")
+    print("A06: PASS")
+
 
 if __name__ == "__main__":
     main()

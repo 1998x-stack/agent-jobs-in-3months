@@ -1,33 +1,32 @@
-# A06 · 检索与 RAG
+# A06 · 文件级 BM25 检索与检索评测
 
-**Track:** S1 — Agent Architecture & Intelligent Execution
+**状态：已实现独立练习、P1 模块及无网络测试。**
 
-## 1. 核心概念
+## 学习目标
 
-BM25 / embeddings / reranking
+将 Markdown 文件切分为稳定段落 ID，再对授权范围内的文本执行 BM25 排序。召回率、MRR 和未知问题的无证据准确率都要评测。
 
-## 2. 最小代码挑战
+## 具体练习
 
-实现带来源标识的混合检索最小版本
+1. 阅读 [concept.md](concept.md)，理解失效路径。
+2. 阅读 [exercise.py](exercise.py)，自行修改一条规则。
+3. 从本目录运行 `python check_exercise.py`。
+4. 对照 P1 工程源码理解工具链与跨模块数据流。
+5. 在仓库根目录运行 `python -m pytest`。
 
-## 3. 接口
+## 完成标准
 
-- 实现 `exercise.py` 中的 `solve(input_data: dict) -> dict`。
-- 保留对异常、权限和边界输入的显式处理；不使用不必要的框架。
-- 运行 `python check_exercise.py`；替换示例断言为该能力的具体检查。
+- [x] 最小 Python 练习可执行
+- [x] 单元测试包含异常与越界输入
+- [x] 已连接到 P1 的文件检索/引用验证
+- [ ] 学习者独立复写、设计新反例并记录 trace
 
-## 4. 验收标准
+## 重要边界
 
-缺失证据时有明确退让策略
+本批实现的是真实本地文档读取 + BM25 词法检索，不是 embeddings 或语义混合检索
 
-## 5. 项目组合
+## P1 对应源码
 
-完成后，思考如何将此能力引入 [p1_agent_harness](../../../projects/p1_agent_harness/README.md)。
+`policy_search.py、retrieval_eval.py`
 
-## 6. 学习证据（TODO）
-
-- [ ] 用自己的话解释概念、边界和适用场景
-- [ ] 最小实现 + 单元测试
-- [ ] 反例/故障注入
-- [ ] 记录设计取舍与失败案例
-- [ ] 在对应项目中集成
+[项目文档](../../../projects/p1_agent_harness/README.md)

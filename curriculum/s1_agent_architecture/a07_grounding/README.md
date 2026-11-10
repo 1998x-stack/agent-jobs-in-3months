@@ -1,33 +1,32 @@
-# A07 · Grounding 与引用校验
+# A07 · 可验证引文与无证据退让
 
-**Track:** S1 — Agent Architecture & Intelligent Execution
+**状态：已实现独立练习、P1 模块及无网络测试。**
 
-## 1. 核心概念
+## 学习目标
 
-citations / evidence / answer faithfulness
+模型输出不能因为附上 [source] 就自动可信。引文要引用本轮实际检索的 chunk_id，且 quote 必须是该 chunk 的原文连续片段。
 
-## 2. 最小代码挑战
+## 具体练习
 
-对回答的证据句进行验证
+1. 阅读 [concept.md](concept.md)，理解失效路径。
+2. 阅读 [exercise.py](exercise.py)，自行修改一条规则。
+3. 从本目录运行 `python check_exercise.py`。
+4. 对照 P1 工程源码理解工具链与跨模块数据流。
+5. 在仓库根目录运行 `python -m pytest`。
 
-## 3. 接口
+## 完成标准
 
-- 实现 `exercise.py` 中的 `solve(input_data: dict) -> dict`。
-- 保留对异常、权限和边界输入的显式处理；不使用不必要的框架。
-- 运行 `python check_exercise.py`；替换示例断言为该能力的具体检查。
+- [x] 最小 Python 练习可执行
+- [x] 单元测试包含异常与越界输入
+- [x] 已连接到 P1 的文件检索/引用验证
+- [ ] 学习者独立复写、设计新反例并记录 trace
 
-## 4. 验收标准
+## 重要边界
 
-无证据断言可被检测
+只校验出处与原文一致性，不证明问答推断的事实性或语义蕴含
 
-## 5. 项目组合
+## P1 对应源码
 
-完成后，思考如何将此能力引入 [p1_agent_harness](../../../projects/p1_agent_harness/README.md)。
+`grounding.py、grounded_demo.py`
 
-## 6. 学习证据（TODO）
-
-- [ ] 用自己的话解释概念、边界和适用场景
-- [ ] 最小实现 + 单元测试
-- [ ] 反例/故障注入
-- [ ] 记录设计取舍与失败案例
-- [ ] 在对应项目中集成
+[项目文档](../../../projects/p1_agent_harness/README.md)

@@ -81,3 +81,18 @@ PYTHONPATH=projects/p1_agent_harness/src python -m agent_harness.live_demo --goa
 该运行会消耗实际 API 费用。CI 通过 Fake Responses 客户端验证行为，不调用模型。
 **注意：** Live Demo 使用 `store=True` 关联多轮请求，不要提交真实隐私数据或生产密钥。
 新增的 A01–A04 基础练习可以直接执行 `python check_exercise.py`；其他课程单元仍保留 TODO。
+
+---
+
+## A05–A07：文档检索与可验证引用（新增）
+
+从 `datasets/policy_docs/*.md` 读取虚构 Markdown 文档，做 BM25 检索、稳定 chunk 引用、租户过滤和离线评测。
+
+```bash
+PYTHONPATH=projects/p1_agent_harness/src python -m agent_harness.grounded_demo --question "refund approval"
+PYTHONPATH=projects/p1_agent_harness/src python -m agent_harness.retrieval_eval
+```
+
+带真实模型的模式在 [P1 文档](projects/p1_agent_harness/README.md) 中。**实时模型调用是付费且需显式 `--live`；CI 全程使用假模型适配器。**
+
+目前 A01–A07 的基础练习已实现；A08–C10 仍保留待完成。检索采用词法 BM25 而非 embeddings；引用保证原文出处可验证，不保证完整语义事实正确。
