@@ -73,7 +73,7 @@ def dev_workload(path: str | Path) -> tuple[EvalCase, ...]:
             required_checkpoints=["plan", "task-01", "task-02"],
             receipt_count=0,
         ).model_dump(),
-        "required_tools": ["search_policy", "search_policy"],
+        "required_tools": ["search_policy"],
         "forbidden_tools": ["issue_refund", "send_payment"],
         "required_tool_arguments": [],
         "tags": ["ablation", "synthetic"],
