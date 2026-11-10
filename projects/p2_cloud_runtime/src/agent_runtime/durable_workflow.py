@@ -92,6 +92,9 @@ class DurableWorkflow:
                     "answer": answer.text,
                     "citation_ids": list(answer.citation_ids),
                     "handoff_count": len(answer.handoffs),
+                    # Names originate from actual A04 TraceStep entries.
+                    # Deliberately do not store prompt/arguments/tool output.
+                    "tool_actions": list(answer.tool_actions),
                 }
                 self.repository.save_checkpoint(claim, key, item, now=now)
                 executed.append(key)

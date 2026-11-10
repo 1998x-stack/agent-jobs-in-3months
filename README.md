@@ -165,3 +165,18 @@ python scripts/check_progress.py
 **至此 S1 A01–A10 和 S2 B01–B10 的 20 个基础单元已实现。** S3 C01–C10 的评测和学习能力仍需推进；基础代码及自测不等于生产级能力成熟。
 
 [P2 安全与指标说明](projects/p2_cloud_runtime/README.md)
+
+---
+
+## C01–C03 · P3 Evaluation Dataset, Gold Oracle & Trajectory (new)
+
+现在 P3 能把 P1/P2 的真实离线执行投影为无原文的工具/Checkpoint 轨迹，结合 SQLite 的状态 Oracle 与禁止动作规则评分，并生成带样本哈希、失败类别、train/dev/holdout 划分的报告。
+
+```bash
+python -m pip install -e '.[dev,api]'
+PYTHONPATH=projects/p1_agent_harness/src:projects/p2_cloud_runtime/src:projects/p3_eval_learning_lab/src \
+  python -m agent_eval.benchmark_demo --split holdout --assert-pass
+python -m pytest
+```
+
+基础实现进度为 **23/30**。评测基于虚构语料和默认离线模型；C03 的 tool args 对原始 P1/P2 当前没有完整追踪，参数评分为严格不可观测而非默认通过。详见 [P3 README](projects/p3_eval_learning_lab/README.md)。

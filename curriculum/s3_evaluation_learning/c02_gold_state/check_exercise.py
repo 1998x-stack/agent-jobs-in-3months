@@ -1,11 +1,14 @@
-"""Run directly: python curriculum/s3_evaluation_learning/c02_gold_state/check_exercise.py"""
 from exercise import solve
 
+
 def main() -> None:
-    # Replace this generic contract with an actual edge-case assertion.
-    result = solve({"goal": "minimal reproducible learning task"})
-    assert isinstance(result, dict), "Return a structured result"
-    print("C02 baseline check passed; add boundary cases next")
+    gold = {"run_status": "completed", "result_status": "supported", "receipt_count": 0}
+    actual = {**gold, "final_text": "I have issued a refund!"}
+    assert solve({"expected": gold, "actual": actual})["passed"]
+    wrong = {**actual, "receipt_count": 1}
+    assert solve({"expected": gold, "actual": wrong})["mismatches"] == ["receipt_count"]
+    print("C02: PASS")
+
 
 if __name__ == "__main__":
     main()
