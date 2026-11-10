@@ -9,7 +9,7 @@ not exactly-once external effects. All tools remain offline and read-only.
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from agent_harness.agent_team import PlannerAgent, TeamCoordinator
+from agent_harness.agent_team import PlannedTask, PlannerAgent, TeamCoordinator
 from agent_harness.grounding import NO_EVIDENCE_MESSAGE
 from agent_harness.policy_search import PolicyCorpus, demo_corpus
 from agent_harness.scoped_memory import MemoryScope, ScopedMemoryStore
@@ -31,7 +31,11 @@ class DurableWorkflow:
         *,
         corpus: PolicyCorpus | None = None,
         after_checkpoint: Callable[[str], None] | None = None,
+        split_plan: bool = True,
     ) -> None:
+        if type(split_plan) is not bool:
+            raise ValueError("split_plan must be a boolean")
+        self.split_plan = split_plan
         self.repository = repository
         self.corpus = corpus or demo_corpus()
         self.after_checkpoint = after_checkpoint
@@ -47,7 +51,10 @@ class DurableWorkflow:
             plan = cached["plan"]
             reused.append("plan")
         else:
-            tasks = PlannerAgent().plan(run.question, max_tasks=run.max_tasks)
+            tasks = (
+                PlannerAgent().plan(run.question, max_tasks=run.max_tasks)
+                if self.split_plan else (PlannedTask("subtask-01", run.question),)
+            )
             plan = {
                 "tasks": [
                     {"task_id": task.task_id, "question": task.question}
@@ -86,6 +93,7 @@ class DurableWorkflow:
                         scope=scope,
                         max_tasks=1,
                         max_context_chars=run.max_context_chars,
+                        split_plan=self.split_plan,
                     )
                 item = {
                     "status": answer.status,

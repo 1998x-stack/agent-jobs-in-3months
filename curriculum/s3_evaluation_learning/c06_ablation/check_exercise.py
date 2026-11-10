@@ -1,11 +1,25 @@
-"""Run directly: python curriculum/s3_evaluation_learning/c06_ablation/check_exercise.py"""
 from exercise import solve
 
+
 def main() -> None:
-    # Replace this generic contract with an actual edge-case assertion.
-    result = solve({"goal": "minimal reproducible learning task"})
-    assert isinstance(result, dict), "Return a structured result"
-    print("C06 baseline check passed; add boundary cases next")
+    outcome = solve({
+        "control": {"case-a": True, "case-b": True, "case-c": False},
+        "variant": {"case-c": False, "case-b": False, "case-a": True},
+        "changed_component": "retrieval_evidence",
+    })
+    assert outcome["delta"] == -1 / 3
+    assert outcome["n"] == 3 and outcome["losses"] == 1
+    try:
+        solve({
+            "control": {"a": True}, "variant": {"b": True},
+            "changed_component": "memory",
+        })
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("unpaired comparison accepted")
+    print("C06: PASS")
+
 
 if __name__ == "__main__":
     main()

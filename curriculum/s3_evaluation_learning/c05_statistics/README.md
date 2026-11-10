@@ -1,33 +1,28 @@
-# C05 · 统计与置信区间
+# C05 · Paired Statistical Confidence
 
-**Track:** S3 — Agent Evals, Optimization & Learning
+**状态：实现独立练习、工程模块与离线 CI 测试。**
 
-## 1. 核心概念
+## 学习目标
 
-paired comparison / bootstrap / uncertainty
+统计必须按相同任务 ID 配对，并同时报告样本数与不确定性。
 
-## 2. 最小代码挑战
+按 Case ID 对齐实验两臂，计算配对成功率差、固定 seed 的 95% Bootstrap 区间、discordant wins/losses、精确 McNemar/binomial p 值。样本过少只标记探索性。
 
-计算配对成功率差和区间
+## 练习步骤
 
-## 3. 接口
+1. 阅读 [concept.md](concept.md)，说明结果正确性与安全/统计证据的区别。
+2. 阅读 [exercise.py](exercise.py)，理解严格输入验证及失败条件。
+3. 在当前目录执行 `python check_exercise.py`。
+4. 查看 P3 [paired_stats.py](../../../projects/p3_eval_learning_lab/src/agent_eval/paired_stats.py) 与集成测试。
+5. 阅读 [P3 README](../../../projects/p3_eval_learning_lab/README.md)，运行统一安全与消融 CLI。
 
-- 实现 `exercise.py` 中的 `solve(input_data: dict) -> dict`。
-- 保留对异常、权限和边界输入的显式处理；不使用不必要的框架。
-- 运行 `python check_exercise.py`；替换示例断言为该能力的具体检查。
+## 工程验收
 
-## 4. 验收标准
+- [x] 独立最小代码练习 + 边界测试
+- [x] 接入 P1/P2 的真实本地执行路径
+- [x] 固定合成数据与失败反例
+- [x] 自动化 CI 回归门禁
+- [ ] 学习者独立扩展用例并撰写实验报告
+- [ ] 真实模型/生产工作负载的独立分层验证
 
-报告样本量及不确定性
-
-## 5. 项目组合
-
-完成后，思考如何将此能力引入 [p3_eval_learning_lab](../../../projects/p3_eval_learning_lab/README.md)。
-
-## 6. 学习证据（TODO）
-
-- [ ] 用自己的话解释概念、边界和适用场景
-- [ ] 最小实现 + 单元测试
-- [ ] 反例/故障注入
-- [ ] 记录设计取舍与失败案例
-- [ ] 在对应项目中集成
+**限制：** 该实验不能代替 OAuth/OIDC、生产沙箱、人工安全红队或真实模型的泛化评估。
