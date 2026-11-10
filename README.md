@@ -96,3 +96,18 @@ PYTHONPATH=projects/p1_agent_harness/src python -m agent_harness.retrieval_eval
 带真实模型的模式在 [P1 文档](projects/p1_agent_harness/README.md) 中。**实时模型调用是付费且需显式 `--live`；CI 全程使用假模型适配器。**
 
 目前 A01–A07 的基础练习已实现；A08–C10 仍保留待完成。检索采用词法 BM25 而非 embeddings；引用保证原文出处可验证，不保证完整语义事实正确。
+
+---
+
+## A08–A10：上下文、记忆和多 Agent 角色协作（新增）
+
+在 P1 上添加 Context Packer（字符预算与来源 ID）、SQLite Scoped Memory（租户/用户隔离与 TTL）、以及 Planner → Researcher → Reviewer 受控交接。默认无需 API Key：
+
+```bash
+PYTHONPATH=projects/p1_agent_harness/src python -m agent_harness.team_demo
+python -m pytest
+```
+
+**当前课程基础实现 A01–A10 已覆盖 10/30 个元能力。** 这属于学习工程基线，不表示已经掌握相关技能或生产级合规已完成。A10 的 MCP Client/Server 协议仍为后续任务。
+
+在线调用通过 `--live` 显式开启，将产生 API 费用；请勿输入敏感客户信息。

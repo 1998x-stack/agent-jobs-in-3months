@@ -1,22 +1,21 @@
-# A10 Concept Notes — Planning、MCP 与多 Agent
+# A10 · Planning & Role-based Multi-Agent 概念笔记
 
-## 必懂术语
+## What & Why
 
-DAG / handoff / stategraph / MCP boundary
+确定性 Planner 拆解有限子任务，Researcher 复用 P1 的 A04 + A06；Reviewer 通过 A07 校验原文，无法回答时明确 abstain。三个角色不意味着三个独立 LLM。
 
-## 解释（学习时填写）
+## 思考题
 
-- What: 这个概念解决的具体问题是什么？
-- Why: 如果没有它，Agent 会在哪种任务上失败？
-- How: 最小的数据结构、输入、输出和状态变化是什么？
-- Trade-off: 成本、速度、可靠性、风险如何权衡？
+1. 为什么「子任务和交接预算」很重要？失效时会怎样？
+2. 为什么「角色转移白名单」很重要？失效时会怎样？
+3. 为什么「伪造引文被 Reviewer 拒绝」很重要？失效时会怎样？
 
-## 典型误区
+## Code
 
-- 演示代码成功 ≠ 生产环境语义正确。
-- 模型返回内容 ≠ 可信指令或事实。
-- 没有可复现测试就无法确认真正掌握。
+[最小练习](exercise.py) · [自测](check_exercise.py) · [P1 源码](../../../projects/p1_agent_harness/src/agent_harness/agent_team.py)
 
-## 自己画一张图（TODO）
+## 深入延伸（尚未实现）
 
-使用 Mermaid 画出该能力的内部状态或调用流程。
+- MCP SDK Client/Server、工具发现、完整握手与授权尚未实现。
+- 把 Planner/Reviewer 升级为独立模型角色需要分别评测其收益、成本和失败模式。
+- 真实生产场景应引入持久工作流和跨 Agent 崩溃恢复。

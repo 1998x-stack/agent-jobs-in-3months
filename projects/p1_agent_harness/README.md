@@ -142,3 +142,72 @@ flowchart TD
  V -->|Valid exact quote| O[Grounded Source Excerpts]
  V -->|Invalid / no evidence| X[Reject or Abstain]
 ```
+
+---
+
+## A08–A10 · Context + SQLite Memory + Agent Team (new)
+
+从 A01–A07 的单 Agent 工具使用与证据验证，升级成可限制上下文、保持显式用户记忆、执行受控角色交接的完整 P1 教学链路。
+
+### 运行 · 离线（默认，不产生 API 费用）
+
+```bash
+PYTHONPATH=projects/p1_agent_harness/src python -m agent_harness.team_demo
+PYTHONPATH=projects/p1_agent_harness/src python -m agent_harness.team_demo \
+  --question "refund proposal human approval and approved refund processing five business days" \
+  --remember "preferred_language=English"
+python -m pytest projects/p1_agent_harness/tests tests/test_atomic_a08_a10.py
+```
+
+### 可选：真实 Researcher 模型（会产生费用）
+
+```bash
+python -m pip install -e '.[dev,llm]'
+export OPENAI_API_KEY='your-own-api-key'
+PYTHONPATH=projects/p1_agent_harness/src python -m agent_harness.team_demo --live
+```
+
+线上模型模式依赖 OpenAI Responses API 的 `store=True` / `previous_response_id`。此模式未在 CI 中使用真实模型验证，且仅适用于合成政策与非敏感数据。
+
+### 新增代码与边界
+
+| 元能力 | 文件 | 实际能力 |
+|---|---|---|
+| A08 | `context_engine.py` | 字符预算、来源 ID、优先级、整块舍弃、模型输入数据与指令分隔 |
+| A09 | `scoped_memory.py` | SQLite + tenant/user composite key、来源白名单、TTL、版本、删除 |
+| A10 | `agent_team.py` | Planner / Researcher / Reviewer、限定子任务与 handoff、审查失败阻断 |
+| Demo | `team_demo.py` | 离线端到端演示、可选 live Researcher |
+| Tests | `test_context_memory_team.py` | 持久化、隔离、预算、角色转移、部分成功和伪造引用测试 |
+
+### 执行流程
+
+```mermaid
+flowchart TD
+ U[User Question] --> P[Planner: bounded decomposition]
+ M[Scoped SQLite Memory] --> C[Context Packer]
+ P --> C
+ C --> R[Researcher: A04 Agent Loop]
+ R --> T[A06 Tenant-scoped Search Tool]
+ T --> R
+ R --> V[Reviewer: A07 exact-quote verification]
+ V -->|verified| O[Coordinator: merge cited excerpts]
+ V -->|no evidence| A[Abstain or Partial]
+ V -->|forged citation| E[Fail closed]
+```
+
+### 严格说明
+
+- 角色协作通过 Python 定义的 handoff 状态完成；不是三个互相自由协作的 LLM。Planner/Reviewer 是确定性逻辑，Researcher 可选真实模型。
+- **没有实现 MCP 协议传输**：MCP Client/Server、会话安全、协议授权保留为 A10 进阶 TODO。
+- Context 的 `max_chars` 是字符数，不等于精确 Token Budget。教学用 estimated_tokens 仅为粗略估算。
+- 模型输入内的结构化 trusted_instructions 字段不是 API 级 system/developer 权限；真实 API 优先级由 adapter 的 instructions 决定。
+- Memory 仅存用户显式或人工批准的非敏感虚构事实，没有加密、SSO、身份验证和生产数据治理。
+- 允许检索源文字段出现低信任指令，本项目标记来源并拒绝自动执行，但不是完整的 Prompt Injection 安全证明。
+- 不支持支付、退款或任意写入工具。
+
+### 继续扩展
+
+- [ ] Context token-aware compaction + summary faithfulness eval。
+- [ ] Memory relevance scoring / expiry & deletion audit / encrypted at rest。
+- [ ] MCP Client/Server integration and SDK conformance tests。
+- [ ] 多模型 Agent 调度的质量/延迟/成本消融；P2 持久执行接入。

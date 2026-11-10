@@ -1,33 +1,29 @@
-# A08 · 上下文工程
+# A08 · Context Engineering
 
-**Track:** S1 — Agent Architecture & Intelligent Execution
+**状态：基础代码、独立自测与 P1 集成已实现。**
 
-## 1. 核心概念
+## 核心概念
 
-compaction / relevance / context budgets
+上下文选择、预算、来源与低信任数据边界
 
-## 2. 最小代码挑战
+准确限制 JSON 序列化后字符数，保留指令与目标，按优先级选择完整 context block；舍弃整块记录 source_id。字符预算并非模型 Token 上限。
 
-设计对历史和工具输出的上下文选择器
+## 实验路径
 
-## 3. 接口
+1. 阅读 [concept.md](concept.md)。
+2. 阅读 [exercise.py](exercise.py)，解释各项输入与失败条件。
+3. 在本目录运行 `python check_exercise.py`。
+4. 对照 [context_engine.py](../../../projects/p1_agent_harness/src/agent_harness/context_engine.py)。
+5. 根目录运行 `python -m pytest`。
 
-- 实现 `exercise.py` 中的 `solve(input_data: dict) -> dict`。
-- 保留对异常、权限和边界输入的显式处理；不使用不必要的框架。
-- 运行 `python check_exercise.py`；替换示例断言为该能力的具体检查。
+## 验收
 
-## 4. 验收标准
+- [x] 超过预算不会截断引文
+- [x] 文档中的伪指令不升权
+- [x] 重复来源 ID 被拒绝
+- [ ] 学习者独立复写和设计更复杂的反例
+- [ ] 提交自己的设计取舍与测试证据
 
-预算越界与上下文污染有测试
+## 集成项目
 
-## 5. 项目组合
-
-完成后，思考如何将此能力引入 [p1_agent_harness](../../../projects/p1_agent_harness/README.md)。
-
-## 6. 学习证据（TODO）
-
-- [ ] 用自己的话解释概念、边界和适用场景
-- [ ] 最小实现 + 单元测试
-- [ ] 反例/故障注入
-- [ ] 记录设计取舍与失败案例
-- [ ] 在对应项目中集成
+[P1 Context + Memory + Agent Team](../../../projects/p1_agent_harness/README.md)
