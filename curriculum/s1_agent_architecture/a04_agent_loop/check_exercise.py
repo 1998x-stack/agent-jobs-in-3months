@@ -1,11 +1,22 @@
-"""Run directly: python curriculum/s1_agent_architecture/a04_agent_loop/check_exercise.py"""
 from exercise import solve
 
-def main() -> None:
-    # Replace this generic contract with an actual edge-case assertion.
-    result = solve({"goal": "minimal reproducible learning task"})
-    assert isinstance(result, dict), "Return a structured result"
-    print("A04 baseline check passed; add boundary cases next")
+def main():
+    value = solve({"goal": "Explain refund policy", "max_steps": 2})
+    assert value["stop_reason"] == "finished"
+    assert len(value["trace"]) == 1
+    try:
+        solve({"goal": "Explain refund policy", "max_steps": 1})
+    except RuntimeError:
+        pass
+    else:
+        raise AssertionError("budget must stop loop")
+    try:
+        solve({"goal": "x", "actions": [{"kind": "tool", "name": "delete_all"}]})
+    except PermissionError:
+        pass
+    else:
+        raise AssertionError("unsafe tool accepted")
+    print("A04: PASS")
 
 if __name__ == "__main__":
     main()

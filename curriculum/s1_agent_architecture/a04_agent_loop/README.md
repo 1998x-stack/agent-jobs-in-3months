@@ -1,33 +1,22 @@
-# A04 · Agent Loop
+# A04 · Observe–Decide–Act / Budget
 
-**Track:** S1 — Agent Architecture & Intelligent Execution
+**状态：基础练习与对应工程组件已经实现，并纳入无网络集成测试。**
 
-## 1. 核心概念
+## 核心学习路线
 
-observe-decide-act / step budgets / termination
+1. 阅读 [concept.md](concept.md) 理解原理与边界。
+2. 阅读 [exercise.py](exercise.py) 中的最小 Python 实现。
+3. 执行 `python check_exercise.py` 验证正确行为与失败路径。
+4. 对照 [P1 Live Agent](../../../projects/p1_agent_harness/README.md) 了解完整组合。
 
-## 2. 最小代码挑战
+## 验收标准
 
-实现含最大步数的 Agent Loop
+- [x] 独立练习有真实实现
+- [x] 异常和边界输入有自测
+- [x] 纳入仓库级 pytest
+- [ ] 学习者独立复写并补充测试
+- [ ] 手工保存一条脱敏执行轨迹与设计笔记
 
-## 3. 接口
+## 项目映射
 
-- 实现 `exercise.py` 中的 `solve(input_data: dict) -> dict`。
-- 保留对异常、权限和边界输入的显式处理；不使用不必要的框架。
-- 运行 `python check_exercise.py`；替换示例断言为该能力的具体检查。
-
-## 4. 验收标准
-
-有 finish、失败、预算耗尽三类停止原因
-
-## 5. 项目组合
-
-完成后，思考如何将此能力引入 [p1_agent_harness](../../../projects/p1_agent_harness/README.md)。
-
-## 6. 学习证据（TODO）
-
-- [ ] 用自己的话解释概念、边界和适用场景
-- [ ] 最小实现 + 单元测试
-- [ ] 反例/故障注入
-- [ ] 记录设计取舍与失败案例
-- [ ] 在对应项目中集成
+[Project P1 源码](../../../projects/p1_agent_harness/src/agent_harness/)

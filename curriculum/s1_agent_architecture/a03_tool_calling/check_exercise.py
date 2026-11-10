@@ -1,11 +1,20 @@
-"""Run directly: python curriculum/s1_agent_architecture/a03_tool_calling/check_exercise.py"""
 from exercise import solve
 
-def main() -> None:
-    # Replace this generic contract with an actual edge-case assertion.
-    result = solve({"goal": "minimal reproducible learning task"})
-    assert isinstance(result, dict), "Return a structured result"
-    print("A03 baseline check passed; add boundary cases next")
+def main():
+    assert "approval" in solve({
+        "tool": "lookup_policy", "arguments": {"topic": "refund"}
+    })["result"]
+    for data, error in [
+        ({"tool": "delete_all", "arguments": {"topic": "refund"}}, PermissionError),
+        ({"tool": "lookup_policy", "arguments": {"topic": "refund", "admin": True}}, ValueError),
+    ]:
+        try:
+            solve(data)
+        except error:
+            pass
+        else:
+            raise AssertionError("unsafe tool proposal accepted")
+    print("A03: PASS")
 
 if __name__ == "__main__":
     main()

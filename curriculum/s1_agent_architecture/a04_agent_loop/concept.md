@@ -1,22 +1,24 @@
-# A04 Concept Notes — Agent Loop
+# A04 · Observe–Decide–Act / Budget
 
-## 必懂术语
+## 核心概念
 
-observe-decide-act / step budgets / termination
+Agent Loop 在模型调用、受控工具执行和工具反馈之间迭代。终止条件必须包括成功、协议异常、模型轮次耗尽和工具次数耗尽。
 
-## 解释（学习时填写）
+## 对应 P1 工程实现
 
-- What: 这个概念解决的具体问题是什么？
-- Why: 如果没有它，Agent 会在哪种任务上失败？
-- How: 最小的数据结构、输入、输出和状态变化是什么？
-- Trade-off: 成本、速度、可靠性、风险如何权衡？
+live_loop.py 用 ModelAdapter、ValidatedToolRegistry 连接完整闭环，并保留安全 Trace。
 
-## 典型误区
+## 实验步骤
 
-- 演示代码成功 ≠ 生产环境语义正确。
-- 模型返回内容 ≠ 可信指令或事实。
-- 没有可复现测试就无法确认真正掌握。
+1. 阅读本单元 exercise.py，解释每个输入字段为什么存在。
+2. 从本目录运行 `python check_exercise.py`，观察 PASS。
+3. 修改一个非法参数，解释为什么必须在 Python 层拒绝。
+4. 对照 P1 的真实模型执行链，区分 API 接入与本地执行权限。
 
-## 自己画一张图（TODO）
+## 工程边界
 
-使用 Mermaid 画出该能力的内部状态或调用流程。
+API 成功返回不代表任务完成；工具输出和模型输出均应视为不可信数据。默认教学 Agent 不能发起真实退款。
+
+## 官方资料
+
+[OpenAI API 文档](https://developers.openai.com/api/docs/guides/function-calling)
