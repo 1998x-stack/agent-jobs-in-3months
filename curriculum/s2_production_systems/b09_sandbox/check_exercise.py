@@ -1,11 +1,24 @@
-"""Run directly: python curriculum/s2_production_systems/b09_sandbox/check_exercise.py"""
+import hashlib
 from exercise import solve
 
+
 def main() -> None:
-    # Replace this generic contract with an actual edge-case assertion.
-    result = solve({"goal": "minimal reproducible learning task"})
-    assert isinstance(result, dict), "Return a structured result"
-    print("B09 baseline check passed; add boundary cases next")
+    assert solve({"operation": "hash_text", "data": "hello"})["sha256"] == (
+        hashlib.sha256(b"hello").hexdigest()
+    )
+    for invalid in (
+        {"operation": "shell", "data": "hi"},
+        {"operation": "hash_text", "data": "hi", "command": "rm -rf"},
+        {"operation": "hash_text", "data": "x" * 1000},
+    ):
+        try:
+            solve(invalid)
+        except (ValueError, PermissionError):
+            pass
+        else:
+            raise AssertionError("unbounded operation accepted")
+    print("B09: PASS")
+
 
 if __name__ == "__main__":
     main()

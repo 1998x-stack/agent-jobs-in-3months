@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-jobs-in-3months"
-version = "0.3.0"
+version = "0.4.0"
 description = "Code-first AI Agent Engineering learning scaffold"
 requires-python = ">=3.11"
 dependencies = ["pydantic>=2.10,<3"]

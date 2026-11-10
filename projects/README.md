@@ -35,3 +35,8 @@ python -m pytest
 ## B04–B06 · P2 Durable Workers
 
 [P2 Runtime](p2_cloud_runtime/README.md) now includes bounded SQLite worker batches, lease renewal, bounded delayed retries and step checkpoints. Default offline crash-recovery demo demonstrates durable resume across repository instances.
+
+
+## B07–B10 · P2 Governance & Safety
+
+[P2 Runtime](p2_cloud_runtime/README.md) includes a four-eyes human approval gate for synthetic receipts, role-bound authorization, fixed-code subprocess limits, and privacy-safe operational metrics.

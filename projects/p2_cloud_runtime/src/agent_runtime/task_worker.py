@@ -14,6 +14,7 @@ from agent_harness.agent_team import TeamCoordinator
 from agent_harness.policy_search import PolicyCorpus, demo_corpus
 from agent_harness.scoped_memory import MemoryScope, ScopedMemoryStore
 
+from .observability import SafeEvent, SafeTelemetry
 from .durable_workflow import DurableWorkflow
 from .retry_policy import RetryableWorkError
 from .run_repository import RunRecord, RunRepository
@@ -44,11 +45,23 @@ def process_one(
     now: float | None = None,
     lease_seconds: float = 120.0,
     after_checkpoint: Callable[[str], None] | None = None,
+    telemetry: SafeTelemetry | None = None,
 ) -> str | None:
     """One task per call. Failures are sanitized to an error code, not raw traceback."""
     claim = repository.claim_next(now=now, lease_seconds=lease_seconds)
     if claim is None:
         return None
+    started = time.perf_counter()
+
+    def record(outcome: str) -> None:
+        if telemetry is not None:
+            telemetry.record(SafeEvent(
+                operation="worker_run",
+                outcome=outcome,
+                duration_ms=(time.perf_counter() - started) * 1000,
+                attempt=claim.run.attempt,
+            ))
+
     try:
         if executor is not None:
             result = executor(claim.run)
@@ -62,13 +75,17 @@ def process_one(
         # Retry only errors explicitly classified as transient. These
         # teaching tools are READ ONLY; external writes need an outbox.
         repository.schedule_retry(claim, now=now, jitter_fraction=0.2)
+        record("error")
         return claim.run.run_id
     except Exception:
         repository.fail(claim, error_code="worker_failed", now=now)
+        record("error")
         return claim.run.run_id
     if not repository.complete(claim, result, now=now):
         # Fencing prevents old workers from committing a late result.
+        record("error")
         raise RuntimeError("stale or expired worker claim: result was not committed")
+    record("ok")
     return claim.run.run_id
 
 

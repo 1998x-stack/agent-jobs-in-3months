@@ -1,11 +1,19 @@
-"""Run directly: python curriculum/s2_production_systems/b07_human_approval/check_exercise.py"""
 from exercise import solve
 
+
 def main() -> None:
-    # Replace this generic contract with an actual edge-case assertion.
-    result = solve({"goal": "minimal reproducible learning task"})
-    assert isinstance(result, dict), "Return a structured result"
-    print("B07 baseline check passed; add boundary cases next")
+    payload = {"requester": "alice", "reviewer": "bob", "executor": "carol"}
+    assert solve({**payload, "decision": "approved"})["synthetic_receipt_allowed"]
+    assert not solve({**payload, "decision": "denied"})["synthetic_receipt_allowed"]
+    assert not solve({**payload, "decision": "pending"})["synthetic_receipt_allowed"]
+    try:
+        solve({**payload, "reviewer": "alice", "decision": "approved"})
+    except PermissionError:
+        pass
+    else:
+        raise AssertionError("self-approval allowed")
+    print("B07: PASS")
+
 
 if __name__ == "__main__":
     main()
