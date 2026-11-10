@@ -1,11 +1,23 @@
-"""Run directly: python curriculum/s2_production_systems/b03_idempotency/check_exercise.py"""
 from exercise import solve
 
+
 def main() -> None:
-    # Replace this generic contract with an actual edge-case assertion.
-    result = solve({"goal": "minimal reproducible learning task"})
-    assert isinstance(result, dict), "Return a structured result"
-    print("B03 baseline check passed; add boundary cases next")
+    assert solve({"requests": [
+        {"key": "key-1", "payload": {"question": "refund"}},
+        {"key": "key-1", "payload": {"question": "refund"}},
+        {"key": "key-2", "payload": {"question": "shipping"}},
+    ]}) == {"created": 2, "replays": 1}
+    try:
+        solve({"requests": [
+            {"key": "same", "payload": {"question": "refund"}},
+            {"key": "same", "payload": {"question": "delete"}},
+        ]})
+    except ValueError as exc:
+        assert "409" in str(exc)
+    else:
+        raise AssertionError("different payload reused same key")
+    print("B03: PASS")
+
 
 if __name__ == "__main__":
     main()

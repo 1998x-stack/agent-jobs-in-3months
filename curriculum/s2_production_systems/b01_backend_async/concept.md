@@ -1,22 +1,26 @@
-# B01 Concept Notes — 后端 API 与异步
+# B01 · FastAPI / HTTP Task Contract: Concepts
 
-## 必懂术语
+## What and why
 
-HTTP / FastAPI / asyncio
+HTTP submits tasks and returns a durable 202 receipt. Worker execution is separate from the request thread.
 
-## 解释（学习时填写）
+## Interview questions
 
-- What: 这个概念解决的具体问题是什么？
-- Why: 如果没有它，Agent 会在哪种任务上失败？
-- How: 最小的数据结构、输入、输出和状态变化是什么？
-- Trade-off: 成本、速度、可靠性、风险如何权衡？
+1. What should POST/GET return when tasks are queued, done, missing or conflicting?
+2. Why does API authentication derive tenant/actor instead of trusting model output?
+3. How is TestClient different from a real listening server?
 
-## 典型误区
+## Implementation map
 
-- 演示代码成功 ≠ 生产环境语义正确。
-- 模型返回内容 ≠ 可信指令或事实。
-- 没有可复现测试就无法确认真正掌握。
+- [Atomic exercise](exercise.py) · [Self-test](check_exercise.py)
+- [FastAPI](../../../projects/p2_cloud_runtime/src/agent_runtime/task_api.py)
+- [SQLite run repository](../../../projects/p2_cloud_runtime/src/agent_runtime/run_repository.py)
+- [Offline Worker](../../../projects/p2_cloud_runtime/src/agent_runtime/task_worker.py)
 
-## 自己画一张图（TODO）
+## Limitations
 
-使用 Mermaid 画出该能力的内部状态或调用流程。
+Bearer demo mapping is not production identity. SQLite atomic request creation is not a guarantee of exactly-once external work.
+
+## Reference
+
+https://fastapi.tiangolo.com/tutorial/testing/ · https://docs.python.org/3/library/sqlite3.html

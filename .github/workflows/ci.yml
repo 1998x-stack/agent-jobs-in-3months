@@ -22,4 +22,8 @@ jobs:
         run: |
           PYTHONPATH=projects/p1_agent_harness/src python -m agent_harness.team_demo --remember 'preferred_language=English'
           python scripts/check_progress.py
+      - name: B01-B03 task API and P1 worker integration smoke
+        run: |
+          PYTHONPATH=projects/p1_agent_harness/src:projects/p2_cloud_runtime/src python -m agent_runtime.api_demo
+          python scripts/check_progress.py
       # TODO: add lint/security checks and dependency pinning after scaffold.

@@ -4,13 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-jobs-in-3months"
-version = "0.2.0"
+version = "0.3.0"
 description = "Code-first AI Agent Engineering learning scaffold"
 requires-python = ">=3.11"
 dependencies = ["pydantic>=2.10,<3"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8,<10", "ruff>=0.7"]
+dev = ["pytest>=8,<10", "ruff>=0.7", "fastapi>=0.115,<1", "httpx>=0.27,<1"]
+api = ["fastapi>=0.115,<1", "uvicorn>=0.30,<1"]
 llm = ["openai>=1.70,<4"]
 
 [tool.setuptools]

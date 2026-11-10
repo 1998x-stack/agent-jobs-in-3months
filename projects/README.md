@@ -26,3 +26,7 @@ python -m pytest
 ## A08–A10 · P1 Role Workflow
 
 [P1 Context, Memory & Agent Team](p1_agent_harness/README.md) includes a reproducible Planner → Researcher → Reviewer demonstration, with SQLite scoped user memory and bounded context packing. This is a teaching version without MCP server or multiple independent LLMs.
+
+## B01–B03: P2 FastAPI Task API
+
+[P2 Agent Runtime HTTP API](p2_cloud_runtime/README.md) integrates P1 into a transactional SQLite task service with strict idempotency and an offline worker. Local teaching MVP only.
