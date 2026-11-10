@@ -279,3 +279,17 @@ def test_retry_cannot_mutate_running_or_invisible_run(tmp_path):
     with pytest.raises(RunMissing):
         repo.retry(bob, item.run_id)
     assert repo.get(bob, item.run_id) is None
+
+
+def test_final_expired_lease_transitions_to_terminal_failure(tmp_path):
+    repo = RunRepository(tmp_path / 'expired-final.sqlite3')
+    scope = MemoryScope('tenant-a', 'alice')
+    item, _ = repo.submit(scope, idempotency_key='deadline-00001', question='refund approval', now=0)
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        claim = repo.claim_next(now=attempt * 10, lease_seconds=5)
+        assert claim is not None and claim.run.attempt == attempt
+    assert repo.claim_next(now=(MAX_ATTEMPTS + 1) * 10) is None
+    final = repo.get(scope, item.run_id)
+    assert final.status == 'failed' and final.error_code == 'attempts_exhausted'
+    with pytest.raises(RunConflict, match='attempt budget'):
+        repo.retry(scope, item.run_id, now=100)

@@ -203,6 +203,13 @@ class RunRepository:
             raise ValueError("lease_seconds must be in (0,3600]")
         stamp = time.time() if now is None else float(now)
         with self._write() as db:
+            # Final expired attempt must not be stranded in 'running' forever.
+            db.execute("""
+                UPDATE agent_runs
+                SET status='failed', error_code='attempts_exhausted',
+                    claim_token=NULL, lease_until=NULL, updated_at=?
+                WHERE status='running' AND lease_until<=? AND attempt>=?
+            """, (stamp, stamp, MAX_ATTEMPTS))
             row = db.execute("""
                 SELECT * FROM agent_runs
                 WHERE attempt < ?
