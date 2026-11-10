@@ -116,3 +116,66 @@ PYTHONPATH=projects/p1_agent_harness/src:projects/p2_cloud_runtime/src \
 - 已提交 Checkpoint 的步骤在恢复时会被跳过，**但崩溃发生在副作用完成之后、Checkpoint 提交之前，仍可能导致重复副作用**。本阶段只允许离线只读工具，不能宣传 exactly-once 外部执行。
 - Checkpoint 保存的只是经原先引文验证的合成结果，不等于模型的完全确定性重放或完整工作流历史快照。
 - 生产所需 PostgreSQL、Outbox、认证、日志脱敏、任务取消、重启风暴防护和真实 SLO 仍属于后续阶段。
+
+---
+
+## B07–B10 · Approval, RBAC, Fixed-code Subprocess & Telemetry
+
+### 完整离线运行（无需网络、真实凭据或付费模型）
+
+```bash
+python -m pip install -e '.[dev,api]'
+PYTHONPATH=projects/p1_agent_harness/src:projects/p2_cloud_runtime/src python -m agent_runtime.governance_demo
+python -m pytest projects/p2_cloud_runtime/tests tests/test_atomic_b07_b10.py
+```
+
+执行路径：Operator 提交并完成合成只读 Agent 任务 → 请求审批 → 未批准先执行返回 409 → Approver 授权 → Executor 生成且仅生成一次**合成收据** → 受限哈希子进程 → Observer 读取脱敏指标。
+
+### 角色权限设计（本地 Demo，非 OAuth）
+
+| Role | Allowed | Denied |
+|---|---|---|
+| `viewer` | GET 自己的 Run | Submit/Retry/Approvals/Sandbox |
+| `operator` | Run Submit/Read/Retry；请求 synthetic receipt 审批 | 自己批准或执行 |
+| `approver` | 查看同租户 Approval、批准或否决 | 提交任务、直接执行 |
+| `executor` | 查看同租户 Approval、批准后的收据执行、固定哈希工具 | 审批决策或提交任务 |
+| `observer` | 低敏聚合 Telemetry 摘要 | 任务内容、审批/执行 |
+
+现有 `create_app(..., token_identities={token: MemoryScope(...)})` 自动映射为 `operator` 以兼容 B01–B06；新的角色使用 `Principal(scope, frozenset({role}))`。Token 必须由服务端配置，不能由 HTTP JSON 或 Agent LLM 自行生成。当前身份映射属于**静态本地演示**，没有令牌撤销、JWT 签名验证、OIDC/JWKS、TLS、Session 或生产认证保障。
+
+### Approval API
+
+| Endpoint | Required Role | Semantics |
+|---|---|
+| `POST /v1/runs/{id}/approvals` | operator | 仅受支持且已完成的本人 Run 可申请，首次 202，重放 200 |
+| `GET /v1/approvals/{id}` | requester / approver / executor | tenant-scoped 读权限，越权 403/404 |
+| `POST /v1/approvals/{id}/decision` | approver | `{"decision":"approved"}` 或 `denied`，不允许 requester 自审 |
+| `POST /v1/approvals/{id}/execute` | executor | 必须 approved，执行人与申请/审批人都不同，事务内生成唯一 synthetic receipt |
+
+审计事件 `requested / approved / denied / consumed` 只记角色身份 ID 和元数据，不记录模型原始回答。只有 `release_demo_receipt` 一种允许动作，任何真实财务操作均不在实现范围。状态已消费后重复执行只返回原收据，不再次写入。
+
+### Fixed-code Subprocess（B09）
+
+`POST /v1/sandbox/hash` 仅 `executor` 可调用；进程只能运行固定 `hash_text`/`count_words` 实现。Supervisor 使用 `python -I -S`、空的环境变量白名单、临时工作目录、子进程超时和 POSIX CPU/内存/文件大小资源限制。没有任意命令入口。**它不是可信不受信代码沙箱：未使用 namespaces、seccomp、微虚机或完整文件系统/网络隔离。**
+
+### Observability / SLO（B10）
+
+`GET /v1/observability/summary` 仅 observer 可读。`observability.py` 以固定低基数 operation/outcome 名称记录 HTTP、审批、沙箱与可选 Worker 指标，提供近窗事件数、success/error rate、p95 和样本数合格后的 SLO 状态。
+
+- 不接收任何 prompt、token、用户标识、原始 URL、Exception 详情与 Tool Output 到 Telemetry。
+- 离线任务未获得模型 token/cost 数据，因此 `cost_usd_observed=null`，不能捏造费用。
+- 指标是**进程内滚动窗口**，服务重启即消失，未对接 OpenTelemetry/Prometheus/Tracing 后端。
+- 样本量不足时 SLO 返回 `insufficient_samples`，不能把少量请求伪称为达到 SLA。
+
+### Files
+
+| File | Role |
+|---|---|
+| `approval_gate.py` | SQLite approval state machine + audit + atomic synthetic receipt |
+| `identity.py` | Authenticated Principal, permission allowlist and tenant scope |
+| `sandbox.py` + `sandbox_worker.py` | fixed-code restricted subprocess |
+| `observability.py` | safe metadata events, p95, SLO and cost-null handling |
+| `governance_demo.py` | TestClient end-to-end offline governance demonstration |
+| `tests/test_governance_security.py` | self-approval, cross-tenant, denial, sandbox timeout, telemetry privacy tests |
+
+**生产安全待办：** OAuth/OIDC, JWKS, secrets rotation, real process sandbox, secure audit retention, outgoing network policy, proper policy-as-code and external metrics/tracing collector.

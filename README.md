@@ -145,3 +145,23 @@ python scripts/check_progress.py
 ```
 
 **当前已实现 16/30 个原子练习。** 本批仍使用本地 SQLite 和合成政策、离线模型；不是生产消息队列，也不保证外部动作 exactly-once。完整详见 [P2 Runtime](projects/p2_cloud_runtime/README.md)。
+
+---
+
+## B07–B10 · Human Approval、RBAC、Sandbox 与 Observability（新增）
+
+本批为 P2 新增真实 HTTP 权限与合成审批流程：请求人、审批人、执行人必须不同；只有批准后的 synthetic receipt 可以在 SQLite 事务里生成，**绝不会调用真实退款或外部写操作**。每个角色从服务端配置的 Demo Token 映射生成，模型无法自行提升权限。
+
+还添加固定程序的 Python 子进程运行器、资源/时间限制与脱敏 Telemetry，拒绝任意 shell/Python 代码。请勿将其视为生产级容器沙箱、OAuth/OIDC 或完整分布式 Trace。
+
+```bash
+python -m pip install -e '.[dev,api]'
+PYTHONPATH=projects/p1_agent_harness/src:projects/p2_cloud_runtime/src \
+  python -m agent_runtime.governance_demo
+python -m pytest
+python scripts/check_progress.py
+```
+
+**至此 S1 A01–A10 和 S2 B01–B10 的 20 个基础单元已实现。** S3 C01–C10 的评测和学习能力仍需推进；基础代码及自测不等于生产级能力成熟。
+
+[P2 安全与指标说明](projects/p2_cloud_runtime/README.md)

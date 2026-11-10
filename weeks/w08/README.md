@@ -1,28 +1,28 @@
-# W08 · Observability & Reliability
+# W08 · Observability, Metrics & SLO
 
-## 本周元能力
+## Unit
 
-- [B10 可观测性与 SLO](../../curriculum/s2_production_systems/b10_observability_slo/README.md)
+- [B10 Observability & SLO](../../curriculum/s2_production_systems/b10_observability_slo/README.md)
 
-## 核心交付
+## Engineering deliverables
 
-P2 错误率、p95、故障复盘
+- [x] Structured SafeEvent schema with allowlisted low-cardinality labels
+- [x] Fixed rolling-window SafeTelemetry and optional JSONL sink
+- [x] HTTP, approval, sandbox and optional worker duration/outcome instrumentation
+- [x] Operational samples, error rate, nearest-rank p95 and sample-qualified SLO
+- [x] Output does not contain raw prompts, credentials, user info, query paths or stacktraces
+- [x] Offline token/cost data absent => explicit unknown cost instead of invented price
+- [ ] OpenTelemetry spans to OTLP backend
+- [ ] Real per-model token/cost data and trace sampling policies
+- [ ] Production SLI thresholds, burn-rate alerts, alerts-to-runbooks and long-window metrics
 
-## 最小任务清单
+## Run
 
-- [ ] 完成对应概念笔记和最小代码挑战
-- [ ] 新增边界/错误/权限测试
-- [ ] 将相关功能接入当前项目
-- [ ] 保存执行截图或 trace（不得含密钥及用户隐私）
-- [ ] 记录一条失败原因与纠正措施
+```bash
+PYTHONPATH=projects/p1_agent_harness/src:projects/p2_cloud_runtime/src python -m agent_runtime.governance_demo
+python -m pytest projects/p2_cloud_runtime/tests/test_governance_security.py
+```
 
-## Evidence Log
+## SLO scope
 
-- Commit / PR: TODO
-- Run command: TODO
-- Pass / fail metrics: TODO
-- Design trade-off: TODO
-
-## Exit Criteria
-
-另一位工程师能按 README 独立复现本周结果，且能说出系统尚未实现的能力。
+This is a demonstration of metric shape and p95 calculation, not an uptime or latency claim about an internet-facing service. Defaults require at least 20 events before reporting met/breached.

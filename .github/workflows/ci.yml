@@ -30,4 +30,8 @@ jobs:
         run: |
           PYTHONPATH=projects/p1_agent_harness/src:projects/p2_cloud_runtime/src python -m agent_runtime.durability_demo
           python scripts/check_progress.py
+      - name: B07-B10 offline governance RBAC sandbox observability smoke
+        run: |
+          PYTHONPATH=projects/p1_agent_harness/src:projects/p2_cloud_runtime/src python -m agent_runtime.governance_demo
+          python scripts/check_progress.py
       # TODO: add lint/security checks and dependency pinning after scaffold.
