@@ -1,0 +1,24 @@
+# Three Integrated Projects
+
+三个项目是一个递进式作品集，而不是三个互不关联的聊天机器人。
+
+1. [P1 Mini Agent Harness](p1_agent_harness/README.md)：Agent Loop、工具协议、Trace、安全边界。
+2. [P2 Agent Cloud Runtime](p2_cloud_runtime/README.md)：任务持久化、幂等、Lease、审批、恢复。
+3. [P3 Agent Eval & Learning Lab](p3_eval_learning_lab/README.md)：任务真值、轨迹、统计、失败分析、实验。
+
+## 功能状态说明
+
+- **MVP**：stdlib 实现可运行的最小参考；仅支持合成任务与演示环境。
+- **TODO**：完整 LLM Planner / RAG / MCP / OTel / 分布式服务 / Sandbox / SFT-RL 等需进一步实现。
+- **Not production ready**：默认实现未通过真实支付、数据安全和企业规模审查。
+
+## 快速演示
+
+```bash
+PYTHONPATH=projects/p1_agent_harness/src python -m agent_harness.demo
+PYTHONPATH=projects/p2_cloud_runtime/src python -m agent_runtime.demo
+PYTHONPATH=projects/p3_eval_learning_lab/src python -m agent_eval.demo
+python -m pytest
+```
+
+每个 P* 的 README 包含接受标准与升级任务。
