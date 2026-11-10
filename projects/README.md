@@ -22,3 +22,7 @@ python -m pytest
 ```
 
 每个 P* 的 README 包含接受标准与升级任务。
+
+## A08–A10 · P1 Role Workflow
+
+[P1 Context, Memory & Agent Team](p1_agent_harness/README.md) includes a reproducible Planner → Researcher → Reviewer demonstration, with SQLite scoped user memory and bounded context packing. This is a teaching version without MCP server or multiple independent LLMs.

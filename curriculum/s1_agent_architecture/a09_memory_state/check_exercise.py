@@ -1,11 +1,21 @@
-"""Run directly: python curriculum/s1_agent_architecture/a09_memory_state/check_exercise.py"""
 from exercise import solve
 
+
 def main() -> None:
-    # Replace this generic contract with an actual edge-case assertion.
-    result = solve({"goal": "minimal reproducible learning task"})
-    assert isinstance(result, dict), "Return a structured result"
-    print("A09 baseline check passed; add boundary cases next")
+    result = solve({
+        "tenant": "tenant-a", "user": "user-a",
+        "key": "preference", "value": "English",
+    })
+    assert result["value"] == "English"
+    assert result["other_tenant_value"] is None
+    try:
+        solve({"tenant": "tenant-a", "user": "", "key": "x", "value": "y"})
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("missing user scope was allowed")
+    print("A09: PASS")
+
 
 if __name__ == "__main__":
     main()

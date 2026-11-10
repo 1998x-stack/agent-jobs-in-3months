@@ -1,22 +1,20 @@
-# A09 Concept Notes — 记忆与状态
+# A09 · Scoped Persistent Memory 概念笔记
 
-## 必懂术语
+## What & Why
 
-working memory / long-term memory / isolation
+SQLite 复合主键绑定 tenant/user/key，明确持久化来源、TTL、版本与删除；只接受显式用户输入或人工批准数据，禁止自动把模型输出写入记忆。
 
-## 解释（学习时填写）
+## 思考题
 
-- What: 这个概念解决的具体问题是什么？
-- Why: 如果没有它，Agent 会在哪种任务上失败？
-- How: 最小的数据结构、输入、输出和状态变化是什么？
-- Trade-off: 成本、速度、可靠性、风险如何权衡？
+1. 为什么「重启后持久化可读」很重要？失效时会怎样？
+2. 为什么「跨租户与跨用户不可见」很重要？失效时会怎样？
+3. 为什么「TTL 过期不可读，模型写入被拒绝」很重要？失效时会怎样？
 
-## 典型误区
+## Code
 
-- 演示代码成功 ≠ 生产环境语义正确。
-- 模型返回内容 ≠ 可信指令或事实。
-- 没有可复现测试就无法确认真正掌握。
+[最小练习](exercise.py) · [自测](check_exercise.py) · [P1 源码](../../../projects/p1_agent_harness/src/agent_harness/scoped_memory.py)
 
-## 自己画一张图（TODO）
+## 深入延伸（尚未实现）
 
-使用 Mermaid 画出该能力的内部状态或调用流程。
+- 基于身份提供方的授权，机密记忆加密、删除审计和并发版本控制。
+- 设计可复现的 memory retrieval eval，防止过期信息污染推理。

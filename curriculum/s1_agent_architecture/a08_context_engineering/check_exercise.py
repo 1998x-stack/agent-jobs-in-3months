@@ -1,11 +1,25 @@
-"""Run directly: python curriculum/s1_agent_architecture/a08_context_engineering/check_exercise.py"""
+import json
 from exercise import solve
 
+
 def main() -> None:
-    # Replace this generic contract with an actual edge-case assertion.
-    result = solve({"goal": "minimal reproducible learning task"})
-    assert isinstance(result, dict), "Return a structured result"
-    print("A08 baseline check passed; add boundary cases next")
+    result = solve({
+        "goal": "Look up policy",
+        "instructions": "Never transfer funds",
+        "blocks": [
+            {"source_id": "mem:1", "content": "user prefers concise answers"},
+            {"source_id": "doc:1", "content": "X" * 1000},
+        ],
+        "max_chars": 300,
+    })
+    context = json.loads(result["context"])
+    assert context["instructions"] == "Never transfer funds"
+    assert context["untrusted_data"][0]["trust"] == "untrusted"
+    assert result["selected_ids"] == ["mem:1"]
+    assert result["dropped_ids"] == ["doc:1"]
+    assert len(result["context"]) <= 300
+    print("A08: PASS")
+
 
 if __name__ == "__main__":
     main()

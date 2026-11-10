@@ -18,4 +18,8 @@ jobs:
           PYTHONPATH=projects/p1_agent_harness/src python -m agent_harness.grounded_demo --question 'refund proposal human approval'
           PYTHONPATH=projects/p1_agent_harness/src python -m agent_harness.retrieval_eval
           python scripts/check_progress.py
+      - name: A08-A10 offline scoped memory and multi-agent smoke
+        run: |
+          PYTHONPATH=projects/p1_agent_harness/src python -m agent_harness.team_demo --remember 'preferred_language=English'
+          python scripts/check_progress.py
       # TODO: add lint/security checks and dependency pinning after scaffold.
