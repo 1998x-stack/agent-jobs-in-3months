@@ -1,22 +1,27 @@
-# B05 Concept Notes — 租约、重试与超时
+# B05 · Leases / Heartbeat / Retry Backoff 核心概念
 
-## 必懂术语
+## 核心原理
 
-leases / TTL / backoff / fencing
+过期租约、所有权 fencing、封顶指数退避与自动延迟重试
 
-## 解释（学习时填写）
+## 不变量
 
-- What: 这个概念解决的具体问题是什么？
-- Why: 如果没有它，Agent 会在哪种任务上失败？
-- How: 最小的数据结构、输入、输出和状态变化是什么？
-- Trade-off: 成本、速度、可靠性、风险如何权衡？
+- `BEGIN IMMEDIATE` 为事务性领取/修改提供互斥写锁。
+- 只有持有当前、未过期 fencing token 的 Worker 才允许提交数据库状态。
+- 超出允许尝试次数必须进入终止状态。
+- 已提交的 Checkpoint 不应被不同结果覆盖，恢复时仅重做未保存的子任务。
 
-## 典型误区
+## 故障注入
 
-- 演示代码成功 ≠ 生产环境语义正确。
-- 模型返回内容 ≠ 可信指令或事实。
-- 没有可复现测试就无法确认真正掌握。
+1. 两个 Worker 同时领取单个排队任务。
+2. Lease 过期后旧 Worker 尝试心跳和完成。
+3. 第一个 Researcher 子任务提交 Checkpoint 后强制中断。
+4. 重新打开 SQLite 文件后恢复并验证旧步骤不会重跑。
 
-## 自己画一张图（TODO）
+## 不能保证的能力
 
-使用 Mermaid 画出该能力的内部状态或调用流程。
+SQLite 不是外部消息 Broker；没有生产级长期心跳、自恢复进程监督、外部副作用幂等或真正分布式调度。
+
+## 源码
+
+[P2 Runtime](../../../projects/p2_cloud_runtime/README.md) · [集成测试](../../../projects/p2_cloud_runtime/tests/test_durable_workers.py)

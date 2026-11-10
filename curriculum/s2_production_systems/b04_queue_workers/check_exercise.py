@@ -1,11 +1,22 @@
-"""Run directly: python curriculum/s2_production_systems/b04_queue_workers/check_exercise.py"""
 from exercise import solve
 
+
 def main() -> None:
-    # Replace this generic contract with an actual edge-case assertion.
-    result = solve({"goal": "minimal reproducible learning task"})
-    assert isinstance(result, dict), "Return a structured result"
-    print("B04 baseline check passed; add boundary cases next")
+    result = solve({"jobs": ["a", "b", "c", "d"], "workers": 4})
+    assert result == {
+        "jobs": 4,
+        "claims": 4,
+        "unique_claims": 4,
+        "no_duplicate_claim": True,
+    }
+    try:
+        solve({"jobs": ["job"], "workers": 0})
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("unbounded invalid worker count")
+    print("B04: PASS")
+
 
 if __name__ == "__main__":
     main()

@@ -13,6 +13,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 import hashlib
 import json
+import math
 from pathlib import Path
 import re
 import sqlite3
@@ -49,6 +50,7 @@ class RunRecord:
     error_code: str | None
     created_at: float
     updated_at: float
+    available_at: float
 
 
 @dataclass(frozen=True)
@@ -87,12 +89,27 @@ class RunRepository:
                     error_code TEXT,
                     created_at REAL NOT NULL,
                     updated_at REAL NOT NULL,
+                    available_at REAL NOT NULL DEFAULT 0,
                     UNIQUE(tenant_id, request_key)
                 )
             """)
             db.execute("""
                 CREATE INDEX IF NOT EXISTS idx_agent_runs_queue
                 ON agent_runs(status, created_at)
+            """)
+            existing = {row["name"] for row in db.execute("PRAGMA table_info(agent_runs)")}
+            if "available_at" not in existing:
+                db.execute(
+                    "ALTER TABLE agent_runs ADD COLUMN available_at REAL NOT NULL DEFAULT 0"
+                )
+            db.execute("""
+                CREATE TABLE IF NOT EXISTS run_checkpoints (
+                    run_id TEXT NOT NULL REFERENCES agent_runs(run_id) ON DELETE CASCADE,
+                    step_key TEXT NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    created_at REAL NOT NULL,
+                    PRIMARY KEY (run_id, step_key)
+                )
             """)
 
     @contextmanager
@@ -132,6 +149,7 @@ class RunRepository:
             error_code=row["error_code"],
             created_at=float(row["created_at"]),
             updated_at=float(row["updated_at"]),
+            available_at=float(row["available_at"]),
         )
 
     def submit(
@@ -213,10 +231,10 @@ class RunRepository:
             row = db.execute("""
                 SELECT * FROM agent_runs
                 WHERE attempt < ?
-                  AND (status='queued' OR
+                  AND ((status='queued' AND available_at <= ?) OR
                        (status='running' AND lease_until <= ?))
-                ORDER BY created_at, run_id LIMIT 1
-            """, (MAX_ATTEMPTS, stamp)).fetchone()
+                ORDER BY available_at, created_at, run_id LIMIT 1
+            """, (MAX_ATTEMPTS, stamp, stamp)).fetchone()
             if row is None:
                 return None
             token = uuid.uuid4().hex
@@ -293,7 +311,147 @@ class RunRepository:
             db.execute("""
                 UPDATE agent_runs SET status='queued', error_code=NULL,
                     result_json=NULL, claim_token=NULL, lease_until=NULL,
-                    updated_at=? WHERE run_id=?
-            """, (stamp, run_id))
+                    updated_at=?, available_at=? WHERE run_id=?
+            """, (stamp, stamp, run_id))
             row = db.execute("SELECT * FROM agent_runs WHERE run_id=?", (run_id,)).fetchone()
             return self._run(row)
+
+
+    def renew_lease(
+        self, claim: RunClaim, *, now: float | None = None,
+        lease_seconds: float = 120,
+    ) -> RunClaim | None:
+        """Only an active, unexpired owner may heartbeat/extend a lease."""
+        if type(lease_seconds) not in (int, float) or not math.isfinite(lease_seconds) or not 0 < lease_seconds <= 3600:
+            raise ValueError("lease_seconds must be in (0,3600]")
+        stamp = time.time() if now is None else float(now)
+        with self._write() as db:
+            cursor = db.execute("""
+                UPDATE agent_runs SET lease_until=MAX(lease_until, ?), updated_at=?
+                WHERE run_id=? AND status='running'
+                  AND claim_token=? AND lease_until>?
+            """, (stamp + lease_seconds, stamp, claim.run.run_id, claim.claim_token, stamp))
+            if cursor.rowcount != 1:
+                return None
+            row = db.execute("SELECT * FROM agent_runs WHERE run_id=?", (claim.run.run_id,)).fetchone()
+            return RunClaim(self._run(row), claim.claim_token, float(row["lease_until"]))
+
+    def schedule_retry(
+        self, claim: RunClaim, *, now: float | None = None,
+        base_seconds: float = 2, cap_seconds: float = 60,
+        jitter_fraction: float = 0.0,
+    ) -> float | None:
+        """Transient error: requeue with backoff or mark terminal at attempt cap.
+
+        None means attempts exhausted; stale worker attempts raise RunConflict.
+        This is safe only for read-only or independently idempotent work.
+        """
+        from .retry_policy import retry_delay
+
+        stamp = time.time() if now is None else float(now)
+        delay = retry_delay(
+            claim.run.attempt, base_seconds=base_seconds,
+            cap_seconds=cap_seconds, jitter_fraction=jitter_fraction,
+            seed=claim.run.run_id,
+        )
+        with self._write() as db:
+            self._verify_claim(db, claim, stamp)
+            if claim.run.attempt >= MAX_ATTEMPTS:
+                db.execute("""
+                    UPDATE agent_runs SET status='failed', error_code='attempts_exhausted',
+                        claim_token=NULL, lease_until=NULL, updated_at=?
+                    WHERE run_id=?
+                """, (stamp, claim.run.run_id))
+                return None
+            eligible = stamp + delay
+            db.execute("""
+                UPDATE agent_runs SET status='queued', error_code='transient_retry',
+                    claim_token=NULL, lease_until=NULL,
+                    available_at=?, updated_at=?
+                WHERE run_id=?
+            """, (eligible, stamp, claim.run.run_id))
+            return eligible
+
+    @staticmethod
+    def _verify_claim(db: sqlite3.Connection, claim: RunClaim, stamp: float) -> None:
+        if not isinstance(claim, RunClaim):
+            raise TypeError("trusted worker claim required")
+        active = db.execute("""
+            SELECT 1 FROM agent_runs
+            WHERE run_id=? AND status='running'
+              AND claim_token=? AND lease_until>?
+        """, (claim.run.run_id, claim.claim_token, stamp)).fetchone()
+        if active is None:
+            raise RunConflict("stale or expired worker claim")
+
+    def save_checkpoint(
+        self, claim: RunClaim, step_key: str, payload: dict,
+        *, now: float | None = None,
+    ) -> bool:
+        """Atomically write once under a valid lease; never overwrite a step."""
+        if not isinstance(step_key, str) or not re.fullmatch(r"(plan|task-0[1-3])", step_key):
+            raise ValueError("unknown workflow step")
+        if not isinstance(payload, dict):
+            raise ValueError("checkpoint must be a JSON object")
+        encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False, allow_nan=False)
+        if len(encoded) > 16000:
+            raise ValueError("checkpoint exceeds demo size limit")
+        stamp = time.time() if now is None else float(now)
+        with self._write() as db:
+            self._verify_claim(db, claim, stamp)
+            found = db.execute("""
+                SELECT payload_json FROM run_checkpoints
+                WHERE run_id=? AND step_key=?
+            """, (claim.run.run_id, step_key)).fetchone()
+            if found:
+                if found["payload_json"] != encoded:
+                    raise RunConflict("checkpoint is immutable once committed")
+                return False
+            db.execute("""
+                INSERT INTO run_checkpoints(run_id, step_key, payload_json, created_at)
+                VALUES (?, ?, ?, ?)
+            """, (claim.run.run_id, step_key, encoded, stamp))
+            return True
+
+    def load_checkpoints(
+        self, claim: RunClaim, *, now: float | None = None,
+    ) -> dict[str, dict]:
+        """Read only the checkpoints of the current fenced worker claim."""
+        stamp = time.time() if now is None else float(now)
+        with self._write() as db:
+            self._verify_claim(db, claim, stamp)
+            rows = db.execute("""
+                SELECT step_key, payload_json FROM run_checkpoints
+                WHERE run_id=? ORDER BY step_key
+            """, (claim.run.run_id,)).fetchall()
+            return {
+                row["step_key"]: json.loads(row["payload_json"]) for row in rows
+            }
+
+    def checkpoint_keys(self, run_id: str) -> tuple[str, ...]:
+        """Worker-side diagnostics only; never expose publicly without auth."""
+        with self._connect() as db:
+            rows = db.execute("""
+                SELECT step_key FROM run_checkpoints
+                WHERE run_id=? ORDER BY step_key
+            """, (run_id,)).fetchall()
+            return tuple(row["step_key"] for row in rows)
+
+    def queue_stats(self, *, now: float | None = None) -> dict[str, int]:
+        """Operational counts, not exposed via the public task HTTP API."""
+        stamp = time.time() if now is None else float(now)
+        with self._connect() as db:
+            rows = db.execute(
+                "SELECT status, COUNT(*) AS n FROM agent_runs GROUP BY status"
+            ).fetchall()
+            counts = {status: 0 for status in ("queued", "running", "completed", "failed")}
+            counts.update({row["status"]: int(row["n"]) for row in rows})
+            due = db.execute("""
+                SELECT COUNT(*) FROM agent_runs
+                WHERE attempt<? AND (
+                    (status='queued' AND available_at<=?)
+                    OR (status='running' AND lease_until<=?)
+                )
+            """, (MAX_ATTEMPTS, stamp, stamp)).fetchone()[0]
+            counts["eligible"] = int(due)
+            return counts

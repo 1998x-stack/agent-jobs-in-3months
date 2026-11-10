@@ -30,3 +30,8 @@ python -m pytest
 ## B01–B03: P2 FastAPI Task API
 
 [P2 Agent Runtime HTTP API](p2_cloud_runtime/README.md) integrates P1 into a transactional SQLite task service with strict idempotency and an offline worker. Local teaching MVP only.
+
+
+## B04–B06 · P2 Durable Workers
+
+[P2 Runtime](p2_cloud_runtime/README.md) now includes bounded SQLite worker batches, lease renewal, bounded delayed retries and step checkpoints. Default offline crash-recovery demo demonstrates durable resume across repository instances.

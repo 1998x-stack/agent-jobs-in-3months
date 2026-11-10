@@ -14,6 +14,8 @@ from agent_harness.agent_team import TeamCoordinator
 from agent_harness.policy_search import PolicyCorpus, demo_corpus
 from agent_harness.scoped_memory import MemoryScope, ScopedMemoryStore
 
+from .durable_workflow import DurableWorkflow
+from .retry_policy import RetryableWorkError
 from .run_repository import RunRecord, RunRepository
 
 
@@ -41,6 +43,7 @@ def process_one(
     executor: Callable[[RunRecord], dict] | None = None,
     now: float | None = None,
     lease_seconds: float = 120.0,
+    after_checkpoint: Callable[[str], None] | None = None,
 ) -> str | None:
     """One task per call. Failures are sanitized to an error code, not raw traceback."""
     claim = repository.claim_next(now=now, lease_seconds=lease_seconds)
@@ -50,10 +53,16 @@ def process_one(
         if executor is not None:
             result = executor(claim.run)
         else:
-            result = offline_executor(
-                claim.run, db_path=repository.filename,
+            result = DurableWorkflow(
+                repository,
                 corpus=corpus if corpus is not None else demo_corpus(),
-            )
+                after_checkpoint=after_checkpoint,
+            ).execute(claim, now=now).result
+    except RetryableWorkError:
+        # Retry only errors explicitly classified as transient. These
+        # teaching tools are READ ONLY; external writes need an outbox.
+        repository.schedule_retry(claim, now=now, jitter_fraction=0.2)
+        return claim.run.run_id
     except Exception:
         repository.fail(claim, error_code="worker_failed", now=now)
         return claim.run.run_id
@@ -66,10 +75,28 @@ def process_one(
 def main() -> None:
     parser = argparse.ArgumentParser(description="P2 offline one-task worker")
     parser.add_argument("--db", default="./agent-runs.sqlite3")
+    parser.add_argument("--workers", type=int, default=1)
+    parser.add_argument("--max-jobs", type=int, default=1)
+    parser.add_argument("--poll", action="store_true", help="keep polling until Ctrl+C")
     args = parser.parse_args()
     repository = RunRepository(args.db)
-    run_id = process_one(repository)
-    print("processed:", run_id if run_id else "none queued")
+    from .worker_pool import poll_batches, run_batch
+    if args.poll:
+        from threading import Event
+        stop = Event()
+        try:
+            poll_batches(
+                repository, stop, parallelism=args.workers,
+                batch_size=args.max_jobs,
+            )
+        except KeyboardInterrupt:
+            stop.set()
+    else:
+        report = run_batch(
+            repository, parallelism=args.workers, max_jobs=args.max_jobs
+        )
+        print("processed:", list(report.processed_run_ids))
+    print("queue:", repository.queue_stats())
 
 
 if __name__ == "__main__":

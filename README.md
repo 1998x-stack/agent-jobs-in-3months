@@ -129,3 +129,19 @@ python -m pytest
 P2 的静态 Token 仅适合本地教学。SQLite 事务与租约不等于外部业务副作用 exactly-once；生产仍需要 OAuth/OIDC、PostgreSQL、Outbox、队列和审计。
 
 [详细 API 与启动命令](projects/p2_cloud_runtime/README.md)
+
+---
+
+## B04–B06 · Worker Pool / Leases & Retries / Durable Checkpoints
+
+在 P2 继续实现 SQLite 持久队列、并发受控 Worker、租约心跳、延迟重试、以及每个子任务完成后落盘的 Checkpoint。崩溃后仅重做未成功写入 Checkpoint 的步骤。
+
+```bash
+python -m pip install -e '.[dev,api]'
+PYTHONPATH=projects/p1_agent_harness/src:projects/p2_cloud_runtime/src \
+  python -m agent_runtime.durability_demo
+python -m pytest
+python scripts/check_progress.py
+```
+
+**当前已实现 16/30 个原子练习。** 本批仍使用本地 SQLite 和合成政策、离线模型；不是生产消息队列，也不保证外部动作 exactly-once。完整详见 [P2 Runtime](projects/p2_cloud_runtime/README.md)。
