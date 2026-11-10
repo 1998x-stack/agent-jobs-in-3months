@@ -111,7 +111,9 @@ def test_four_eyes_approval_full_http_lifecycle(context):
     assert ApprovalGate(repo).audit_counts(approval_id) == {
         "requested": 1, "approved": 1, "consumed": 1,
     }
-    assert telemetry.summary(operation="approval_execute")["samples"] == 2
+    observed = telemetry.summary(operation="approval_execute")
+    assert observed["samples"] == 3  # failed preapproval + approved + replay
+    assert observed["error_rate"] == round(1 / 3, 4)
 
 
 def test_rbac_self_approval_and_cross_tenant_denied(context):
