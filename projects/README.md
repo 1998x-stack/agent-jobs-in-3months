@@ -45,3 +45,8 @@ python -m pytest
 ## C01–C03 · P3 Evaluation Contract
 
 [P3 Evaluation Lab](p3_eval_learning_lab/README.md) now replays actual P1/P2 offline jobs with versioned synthetic benchmark cases, observed SQLite final-state oracles and source-derived tool/checkpoint trajectories.
+
+
+## C04–C06 · Safety, Statistics, Ablation
+
+[P3 Evaluation Lab](p3_eval_learning_lab/README.md) has actual offline P2 API security checks, paired-by-ID confidence reports and one-component-at-a-time P1/P2 Dev ablations. These are small synthetic fixture experiments and not production robustness claims.

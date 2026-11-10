@@ -46,6 +46,7 @@ def process_one(
     lease_seconds: float = 120.0,
     after_checkpoint: Callable[[str], None] | None = None,
     telemetry: SafeTelemetry | None = None,
+    split_plan: bool = True,
 ) -> str | None:
     """One task per call. Failures are sanitized to an error code, not raw traceback."""
     claim = repository.claim_next(now=now, lease_seconds=lease_seconds)
@@ -70,6 +71,7 @@ def process_one(
                 repository,
                 corpus=corpus if corpus is not None else demo_corpus(),
                 after_checkpoint=after_checkpoint,
+                split_plan=split_plan,
             ).execute(claim, now=now).result
     except RetryableWorkError:
         # Retry only errors explicitly classified as transient. These

@@ -1,22 +1,27 @@
-# C05 Concept Notes — 统计与置信区间
+# C05 · Paired Statistical Confidence — Concepts
 
-## 必懂术语
+## 背景与机制
 
-paired comparison / bootstrap / uncertainty
+按 Case ID 对齐实验两臂，计算配对成功率差、固定 seed 的 95% Bootstrap 区间、discordant wins/losses、精确 McNemar/binomial p 值。样本过少只标记探索性。
 
-## 解释（学习时填写）
+## 需要回答的设计问题
 
-- What: 这个概念解决的具体问题是什么？
-- Why: 如果没有它，Agent 会在哪种任务上失败？
-- How: 最小的数据结构、输入、输出和状态变化是什么？
-- Trade-off: 成本、速度、可靠性、风险如何权衡？
+1. 为何不能直接对两组不同任务的成功率做配对比较？
+2. Bootstrap 区间是否等同于因果显著性？
+3. 为什么分组依赖、样本不足、重复试验会使 p 值解读不可靠？
+4. 全成功或无不一致对时精确配对检验会怎样？
 
-## 典型误区
+## 反例与失败注入
 
-- 演示代码成功 ≠ 生产环境语义正确。
-- 模型返回内容 ≠ 可信指令或事实。
-- 没有可复现测试就无法确认真正掌握。
+- 数据缺失、类型不匹配、重复 Case ID 应明确拒绝。
+- 观察非法工具、跨租户读取、审批绕过或非预期副作用。
+- 对照实验要避免不同任务集/训练与保留集混用。
+- 工具参数与真实模型成本未知时必须标注不可观测，而不是默认通过。
 
-## 自己画一张图（TODO）
+## 代码与验收
 
-使用 Mermaid 画出该能力的内部状态或调用流程。
+[代码练习](exercise.py) · [自测](check_exercise.py) · [集成模块](../../../projects/p3_eval_learning_lab/src/agent_eval/paired_stats.py) · [集成回归](../../../projects/p3_eval_learning_lab/tests/test_scientific_eval.py)
+
+## 生产级演进待办
+
+增加独立红队审查、真实模型轨迹与工具参数、脱敏事件流、分层样本与效能分析、多重比较控制，以及有代表性的留出数据。

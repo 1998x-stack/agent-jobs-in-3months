@@ -39,4 +39,8 @@ jobs:
           PYTHONPATH=projects/p1_agent_harness/src:projects/p2_cloud_runtime/src:projects/p3_eval_learning_lab/src python -m agent_eval.benchmark_demo --split holdout --assert-pass
           PYTHONPATH=projects/p1_agent_harness/src:projects/p2_cloud_runtime/src:projects/p3_eval_learning_lab/src python -m agent_eval.benchmark_demo --assert-pass
           python scripts/check_progress.py
+      - name: C04-C06 real offline safety guards and paired ablation regression gate
+        run: |
+          PYTHONPATH=projects/p1_agent_harness/src:projects/p2_cloud_runtime/src:projects/p3_eval_learning_lab/src python -m agent_eval.scientific_demo --assert-pass
+          python scripts/check_progress.py
       # TODO: add lint/security checks and dependency pinning after scaffold.

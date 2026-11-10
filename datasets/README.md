@@ -39,3 +39,11 @@ PYTHONPATH=projects/p1_agent_harness/src:projects/p2_cloud_runtime/src:projects/
 ```
 
 训练/开发/保留集仅隔离虚构文档组，不代表通过真实用户样本的泛化测试，亦未通过独立人工审核。旧 `synthetic_cases.jsonl` 继续服务早期 toy ablation，不应与严格 v1 Schema 混用。
+
+## C04–C06 · Safety & Dev Ablation Fixtures
+
+- [safety_cases_v1.jsonl](safety_cases_v1.jsonl): 9 条虚构安全边界负例，Schema=`agent-safety.v1`，强制 `split=dev`。
+- 覆盖 2 条用户输入指令注入、1 条检索文档指令注入、跨租户访问、自审、未批准执行、Viewer 角色提升、请求体伪造角色、任意 Sandbox 命令。
+- `agent_eval.scientific_demo` 使用 P2 实际 HTTP/SQLite/Tool Action 做独立安全验收，追踪异常副作用计数，输出不包含原始攻击语句。
+- C06 从现有 4 条 Dev 评测 Case 加一条派生的两子任务 Dev Case 构建 5 条工作负载；**不会使用 Holdout 数据调参**。
+- Dev 消融只用于展示一变量对照的工程方法；此数据集不是安全认证、红队覆盖证明或有代表性的统计样本。

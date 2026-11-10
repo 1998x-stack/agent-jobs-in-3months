@@ -180,3 +180,21 @@ python -m pytest
 ```
 
 基础实现进度为 **23/30**。评测基于虚构语料和默认离线模型；C03 的 tool args 对原始 P1/P2 当前没有完整追踪，参数评分为严格不可观测而非默认通过。详见 [P3 README](projects/p3_eval_learning_lab/README.md)。
+
+---
+
+## C04–C06 · Safety Evals、Paired Confidence 与真实组件消融
+
+基于前面完成的 P1/P2/P3 链路，新增固定合成对抗数据、实际 API / Worker 防线评分、按 Case ID 配对的 Bootstrap/McNemar 统计及单变量消融；不依赖远程模型，也不使用真实客户数据。
+
+```bash
+python -m pip install -e '.[dev,api]'
+PYTHONPATH=projects/p1_agent_harness/src:projects/p2_cloud_runtime/src:projects/p3_eval_learning_lab/src \
+  python -m agent_eval.scientific_demo --assert-pass
+python -m pytest
+python scripts/check_progress.py
+```
+
+完成这一批后基础练习覆盖 **26/30**。安全数据集属于合成的固定防线实验，不证明广泛的 prompt injection 防御能力；5 条 Dev 消融任务的差异不代表真实模型的统计泛化。
+
+[P3 详细实验设计与局限](projects/p3_eval_learning_lab/README.md)

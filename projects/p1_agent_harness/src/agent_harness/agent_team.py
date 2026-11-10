@@ -209,12 +209,18 @@ class TeamCoordinator:
         max_tasks: int = 3,
         max_handoffs: int = 9,
         max_context_chars: int = 2200,
+        split_plan: bool = True,
     ) -> TeamRun:
+        if type(split_plan) is not bool:
+            raise ValueError("split_plan must be a boolean")
         if not isinstance(scope, MemoryScope):
             raise TypeError("trusted application scope required")
         if type(max_handoffs) is not int or max_handoffs < 1:
             raise ValueError("max_handoffs must be positive")
-        tasks = self.planner.plan(question, max_tasks=max_tasks)
+        tasks = (
+            self.planner.plan(question, max_tasks=max_tasks)
+            if split_plan else (PlannedTask("subtask-01", question),)
+        )
         if len(tasks) * 3 > max_handoffs:
             # Fail before any tool or model invocation (not half through a plan).
             raise AgentBudgetExceeded("handoff budget insufficient for the plan")
