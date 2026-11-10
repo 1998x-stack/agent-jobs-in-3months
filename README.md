@@ -64,3 +64,20 @@ python scripts/check_progress.py
 ## 🧩 状态
 
 **Scaffold / 学习骨架已建立。** `curriculum` 下的教学练习尚需逐项实现，`projects` 中的进阶能力也是显式 TODO。请勿将其视为可以直接用于生产、支付或处理敏感客户数据的软件。
+
+---
+
+## A01–A04：真实模型执行链（已添加）
+
+在 [P1 Live Agent](projects/p1_agent_harness/README.md) 中，新增了可选 OpenAI Responses API 执行版本：
+ModelAdapter → Strict JSON Schema / Pydantic → Read-only Tool Registry → Agent Loop。
+
+```bash
+python -m pip install -e '.[dev,llm]'
+export OPENAI_API_KEY='your-own-api-key'
+PYTHONPATH=projects/p1_agent_harness/src python -m agent_harness.live_demo --goal "Look up refund policy"
+```
+
+该运行会消耗实际 API 费用。CI 通过 Fake Responses 客户端验证行为，不调用模型。
+**注意：** Live Demo 使用 `store=True` 关联多轮请求，不要提交真实隐私数据或生产密钥。
+新增的 A01–A04 基础练习可以直接执行 `python check_exercise.py`；其他课程单元仍保留 TODO。

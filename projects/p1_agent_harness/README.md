@@ -29,3 +29,57 @@ python -m pytest projects/p1_agent_harness/tests
 ## 退出标准
 
 至少 20 个合成任务、工具授权单测、终止预算测试、完整轨迹、可重放失败案例；写明模型行为非确定性的控制方法。
+
+---
+
+## A01–A04 · Live Responses API Agent (new)
+
+这里新增可使用真实 OpenAI 模型的版本，但默认仍保持完全离线的测试路径。
+
+### 运行真实模型
+
+```bash
+python -m pip install -e '.[dev,llm]'
+export OPENAI_API_KEY='your-own-api-key'
+export OPENAI_MODEL='gpt-5-mini'
+PYTHONPATH=projects/p1_agent_harness/src python -m agent_harness.live_demo --goal "Look up the 'refund' policy"
+```
+
+**该命令会产生实际的 API 费用；CI 没有使用真实密钥或付费模型。**
+
+### 源码对应
+
+| Unit | Files | Focus |
+|---|---|---|
+| A01 | llm.py, openai_adapter.py | ModelAdapter / Responses API / token cap |
+| A02 | schemas.py, typed_tools.py | Strict JSON Schema + Pydantic validation |
+| A03 | typed_tools.py | Read-only allowlist / call_id / tool feedback |
+| A04 | live_loop.py | Observe-Decide-Act, budgets, sanitized trace |
+
+### 实际执行路径
+
+```mermaid
+sequenceDiagram
+ participant U as User
+ participant L as Agent Loop
+ participant M as Responses API
+ participant T as Safe Tool Registry
+ U->>L: Goal
+ L->>M: User input and strict tool schemas
+ M-->>L: function_call with call_id
+ L->>T: Allowlist and Pydantic validation
+ T-->>L: JSON tool result
+ L->>M: function_call_output and previous_response_id
+ M-->>L: Final answer
+ L-->>U: Answer and sanitized trace
+```
+
+### 测试
+
+```bash
+python -m pytest projects/p1_agent_harness/tests tests/test_atomic_a01_a04.py
+```
+
+**隐私与合规：** 教学适配器显式设置 `store=True` 支持 `previous_response_id` 多轮链。不要发送真实客户数据、密钥和敏感轨迹。生产环境必须检查数据保留政策，并考虑无状态方案。
+
+**局限：** 只允许只读政策查询；真实检索、多 Agent、OAuth、人工审批、分布式恢复尚未实现。参考 API 规范：[Function Calling](https://developers.openai.com/api/docs/guides/function-calling)。

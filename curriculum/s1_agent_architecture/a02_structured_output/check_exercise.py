@@ -1,11 +1,18 @@
-"""Run directly: python curriculum/s1_agent_architecture/a02_structured_output/check_exercise.py"""
+from pydantic import ValidationError
 from exercise import solve
 
-def main() -> None:
-    # Replace this generic contract with an actual edge-case assertion.
-    result = solve({"goal": "minimal reproducible learning task"})
-    assert isinstance(result, dict), "Return a structured result"
-    print("A02 baseline check passed; add boundary cases next")
+def main():
+    valid = solve({"arguments_json": '{"topic":"refund"}'})
+    assert valid["arguments"] == {"topic": "refund"}
+    assert valid["schema"]["additionalProperties"] is False
+    for bad in ('{"topic":42}', '{"topic":""}', '{"topic":"refund","admin":true}'):
+        try:
+            solve({"arguments_json": bad})
+        except ValidationError:
+            pass
+        else:
+            raise AssertionError("invalid tool arguments passed")
+    print("A02: PASS")
 
 if __name__ == "__main__":
     main()

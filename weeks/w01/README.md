@@ -28,3 +28,14 @@
 ## Exit Criteria
 
 另一位工程师能按 README 独立复现本周结果，且能说出系统尚未实现的能力。
+
+## A01–A04 工程进度更新
+
+- [x] Model Adapter / tool JSON schema / argument validation
+- [x] read-only function calling / Responses API handoff
+- [x] deterministic fake-client integration tests (no API key)
+- [x] model turn and tool call budget tests
+- [ ] 用自己的 API key 运行真实模型（会产生 API 费用）
+- [ ] 保存一条手动验证的脱敏 Trace 作为学习证据
+
+参考：[P1 Live Agent](../../projects/p1_agent_harness/README.md)
